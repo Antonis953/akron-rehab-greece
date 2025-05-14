@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
-import { HelpCircle, Check, Calendar, User, FirstAidKit, Bone, HeartCrack, Activity } from 'lucide-react';
+import { HelpCircle, Check, Calendar, User, Stethoscope, Bone, HeartCrack, Activity } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -66,7 +65,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
         <AccordionItem value="medical">
           <AccordionTrigger className="flex items-center">
             <div className="flex items-center gap-2">
-              <FirstAidKit className="h-4 w-4 text-primary" />
+              <Stethoscope className="h-4 w-4 text-primary" />
               <span>Ιατρικό Ιστορικό</span>
             </div>
           </AccordionTrigger>
