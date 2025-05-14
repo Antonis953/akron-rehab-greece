@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import PhysiotherapistOnboardingPage from "./pages/PhysiotherapistOnboardingPage";
+import PatientOnboardingPage from "./pages/PatientOnboardingPage";
+import PhysiotherapistDashboard from "./pages/PhysiotherapistDashboard";
+import PatientDashboard from "./pages/PatientDashboard";
 
 const queryClient = new QueryClient();
 
@@ -16,7 +21,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/onboarding/physiotherapist" element={<PhysiotherapistOnboardingPage />} />
+          <Route path="/onboarding/patient" element={<PatientOnboardingPage />} />
+          <Route path="/dashboard/physiotherapist" element={<PhysiotherapistDashboard />} />
+          <Route path="/dashboard/patient" element={<PatientDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

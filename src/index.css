@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +97,35 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Open Sans', 'Roboto', sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+.brand-gradient {
+  background: linear-gradient(135deg, #1B677D, #90B7C2);
+}
+
+.phase-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+.phase-isometric {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.phase-concentric {
+  @apply bg-green-100 text-green-800;
+}
+
+.phase-eccentric {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.phase-plyometric {
+  @apply bg-orange-100 text-orange-800;
 }
