@@ -1,70 +1,114 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
-const patientFormSchema = z.object({
-  name: z.string().min(2, {
-    message: 'Το όνομα πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
-  }),
-  age: z.coerce.number().min(18, {
-    message: 'Η ηλικία πρέπει να είναι τουλάχιστον 18 ετών.',
-  }),
-  email: z.string().email({
-    message: 'Παρακαλώ εισάγετε έγκυρο email.',
-  }),
-  phoneNumber: z.string().min(10, {
-    message: 'Παρακαλώ εισάγετε έγκυρο αριθμό τηλεφώνου.',
-  }),
-  condition: z.string().min(2, {
-    message: 'Παρακαλώ περιγράψτε την κατάστασή σας.',
-  }),
-  painLevel: z.number().min(0).max(10),
-  limitations: z.string().min(2, {
-    message: 'Παρακαλώ περιγράψτε τους περιορισμούς σας.',
-  }),
-  goals: z.string().min(2, {
-    message: 'Παρακαλώ περιγράψτε τους στόχους σας.',
-  }),
-  medicalHistory: z.string().optional(),
-});
+// Step Components
+import PersonalInfoStep from '@/components/onboarding-steps/PersonalInfoStep';
+import MedicalHistoryStep from '@/components/onboarding-steps/MedicalHistoryStep';
+import ProblemAreaStep from '@/components/onboarding-steps/ProblemAreaStep';
+import SymptomsStep from '@/components/onboarding-steps/SymptomsStep';
+import LifestyleStep from '@/components/onboarding-steps/LifestyleStep';
+import AppointmentStep from '@/components/onboarding-steps/AppointmentStep';
+import ReviewStep from '@/components/onboarding-steps/ReviewStep';
 
-type PatientFormValues = z.infer<typeof patientFormSchema>;
+// Определение типа для шагов onboarding
+type OnboardingStep = 
+  | 'personal'
+  | 'medical'
+  | 'problem-area'
+  | 'symptoms'
+  | 'lifestyle'
+  | 'appointment'
+  | 'review';
+
+const steps: OnboardingStep[] = [
+  'personal',
+  'medical',
+  'problem-area',
+  'symptoms',
+  'lifestyle',
+  'appointment',
+  'review',
+];
+
+const stepLabels = {
+  'personal': 'Προσωπικά Στοιχεία',
+  'medical': 'Ιατρικό Ιστορικό',
+  'problem-area': 'Προβληματική Περιοχή',
+  'symptoms': 'Συμπτώματα & Πόνος',
+  'lifestyle': 'Συνήθειες Ζωής',
+  'appointment': 'Επόμενη Συνεδρία',
+  'review': 'Ανασκόπηση'
+};
 
 const PatientOnboarding = () => {
   const navigate = useNavigate();
-  const form = useForm<PatientFormValues>({
-    resolver: zodResolver(patientFormSchema),
-    defaultValues: {
-      name: '',
-      age: 30,
-      email: '',
-      phoneNumber: '',
-      condition: '',
-      painLevel: 5,
-      limitations: '',
-      goals: '',
-      medicalHistory: '',
-    },
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('personal');
+  const [formData, setFormData] = useState({
+    // Personal Info
+    name: '',
+    age: 30,
+    gender: '',
+    email: '',
+    phoneNumber: '',
+    
+    // Medical History
+    previousInjuries: '',
+    chronicConditions: '',
+    medications: '',
+    
+    // Problem Area
+    problemArea: '',
+    problemDescription: '',
+    injuryDate: null as Date | null,
+    
+    // Symptoms & Pain
+    painLevel: 5,
+    morningPain: false,
+    nightPain: false,
+    worseningFactors: '',
+    relievingFactors: '',
+    
+    // Lifestyle
+    dailyActivity: '',
+    occupation: '',
+    sleepQuality: '',
+    stressLevel: 5,
+    
+    // Appointment
+    nextAppointment: null as Date | null,
   });
 
-  const onSubmit = async (data: PatientFormValues) => {
+  const currentStepIndex = steps.indexOf(currentStep);
+
+  const handleNext = () => {
+    const nextStep = steps[currentStepIndex + 1];
+    if (nextStep) {
+      setCurrentStep(nextStep);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrevious = () => {
+    const prevStep = steps[currentStepIndex - 1];
+    if (prevStep) {
+      setCurrentStep(prevStep);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const updateFormData = (data: Partial<typeof formData>) => {
+    setFormData((prev) => ({ ...prev, ...data }));
+  };
+
+  const handleSubmit = async () => {
     try {
-      console.log('Patient data:', data);
-      // In a real implementation, we would save this data to Supabase
+      console.log('Patient data:', formData);
+      // Here we would save the data to Supabase in a real implementation
       
-      // Show success message
       toast.success('Η εγγραφή σας ολοκληρώθηκε με επιτυχία!');
-      
-      // Navigate to dashboard (we'll create this page next)
       navigate('/dashboard/patient');
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -72,186 +116,100 @@ const PatientOnboarding = () => {
     }
   };
 
+  const renderStep = () => {
+    switch (currentStep) {
+      case 'personal':
+        return <PersonalInfoStep data={formData} updateData={updateFormData} />;
+      case 'medical':
+        return <MedicalHistoryStep data={formData} updateData={updateFormData} />;
+      case 'problem-area':
+        return <ProblemAreaStep data={formData} updateData={updateFormData} />;
+      case 'symptoms':
+        return <SymptomsStep data={formData} updateData={updateFormData} />;
+      case 'lifestyle':
+        return <LifestyleStep data={formData} updateData={updateFormData} />;
+      case 'appointment':
+        return <AppointmentStep data={formData} updateData={updateFormData} />;
+      case 'review':
+        return <ReviewStep data={formData} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6 animate-fade-in">
+    <div className="max-w-3xl mx-auto p-6 animate-fade-in">
       <h1 className="text-2xl font-bold mb-6 text-center">Εγγραφή Ασθενούς</h1>
       <p className="text-gray-600 mb-8 text-center">
         Συμπληρώστε τα παρακάτω στοιχεία για τη δημιουργία του εξατομικευμένου προγράμματος αποκατάστασής σας
       </p>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ονοματεπώνυμο</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Μαρία Παπαδοπούλου" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="age"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ηλικία</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
-                      onChange={(e) => field.onChange(parseInt(e.target.value))} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="example@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Τηλέφωνο</FormLabel>
-                  <FormControl>
-                    <Input placeholder="6912345678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="condition"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Τρέχουσα Κατάσταση</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Περιγράψτε την τρέχουσα κατάσταση της υγείας σας (π.χ. τραυματισμός γόνατος, αποκατάσταση μετά από χειρουργείο, κλπ.)" 
-                    className="min-h-[100px]" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      {/* Progress indicator */}
+      <div className="mb-8">
+        <div className="flex justify-between mb-2">
+          {steps.map((step, index) => (
+            <div 
+              key={step} 
+              className={`flex flex-col items-center ${index <= currentStepIndex ? 'text-primary' : 'text-gray-400'}`}
+            >
+              <div 
+                className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 
+                  ${index < currentStepIndex ? 'bg-primary text-white' : 
+                    index === currentStepIndex ? 'border-2 border-primary text-primary' : 
+                    'border-2 border-gray-300 text-gray-400'}`}
+              >
+                {index + 1}
+              </div>
+              <span className="text-xs text-center hidden md:block">{stepLabels[step]}</span>
+            </div>
+          ))}
+        </div>
+        <div className="w-full bg-gray-200 h-2 rounded-full">
+          <div 
+            className="bg-primary h-2 rounded-full transition-all duration-300" 
+            style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
           />
+        </div>
+      </div>
 
-          <FormField
-            control={form.control}
-            name="painLevel"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Επίπεδο Πόνου (0-10)</FormLabel>
-                <div className="flex flex-col space-y-2">
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Χωρίς πόνο (0)</span>
-                    <span>Ακραίος πόνος (10)</span>
-                  </div>
-                  <FormControl>
-                    <Slider
-                      min={0}
-                      max={10}
-                      step={1}
-                      defaultValue={[field.value]}
-                      onValueChange={(value) => field.onChange(value[0])}
-                      className="mt-2"
-                    />
-                  </FormControl>
-                </div>
-                <div className="text-center mt-2 font-medium">
-                  Επιλεγμένη τιμή: {field.value}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      {/* Current step content */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-primary">
+          {stepLabels[currentStep]}
+        </h2>
+        {renderStep()}
+      </div>
 
-          <FormField
-            control={form.control}
-            name="limitations"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Περιορισμοί Κινητικότητας</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Περιγράψτε τους περιορισμούς που αντιμετωπίζετε στην καθημερινότητά σας λόγω της κατάστασής σας" 
-                    className="min-h-[100px]" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="goals"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Στόχοι Αποκατάστασης</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Τι θα θέλατε να πετύχετε μέσω του προγράμματος αποκατάστασης; (π.χ. επιστροφή στο τρέξιμο, μείωση του πόνου, κλπ.)" 
-                    className="min-h-[100px]" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="medicalHistory"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ιατρικό Ιστορικό (προαιρετικό)</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Αναφέρετε τυχόν σχετικό ιατρικό ιστορικό ή προηγούμενους τραυματισμούς" 
-                    className="min-h-[100px]" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex justify-end">
-            <Button type="submit" className="bg-accent hover:bg-accent/90 text-white">
-              Ολοκλήρωση Εγγραφής
-            </Button>
-          </div>
-        </form>
-      </Form>
+      {/* Navigation buttons */}
+      <div className="flex justify-between mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePrevious}
+          disabled={currentStepIndex === 0}
+          className="bg-white hover:bg-gray-50"
+        >
+          Προηγούμενο
+        </Button>
+        
+        {currentStep !== 'review' ? (
+          <Button
+            type="button"
+            onClick={handleNext}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            Επόμενο
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="bg-accent hover:bg-accent/90 text-white"
+          >
+            Ολοκλήρωση Εγγραφής
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
