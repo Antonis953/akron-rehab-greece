@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { HelpCircle, Medkit } from 'lucide-react';
+import { HelpCircle, FirstAidKit } from 'lucide-react';
 
 const medicalHistorySchema = z.object({
   previousInjuries: z.string().optional(),
@@ -47,7 +47,7 @@ const MedicalHistoryStep: React.FC<MedicalHistoryStepProps> = ({ data, updateDat
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex items-center space-x-2 mb-4">
-          <Medkit className="h-5 w-5 text-primary" />
+          <FirstAidKit className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-medium">Ιατρικό Ιστορικό</h3>
         </div>
 
