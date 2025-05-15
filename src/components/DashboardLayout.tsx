@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 import { Button } from './ui/button';
 import { UserRole } from '@/types';
-import { User, Calendar, ProgressBar, ClipboardList, Plus } from 'lucide-react';
+import { User, Calendar, ClipboardList, Plus } from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
 
 interface DashboardLayoutProps extends PropsWithChildren {
   userRole: UserRole;

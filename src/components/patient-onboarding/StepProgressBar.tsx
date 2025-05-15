@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { OnboardingStep } from './types';
+import { Progress } from "@/components/ui/progress";
 
 interface StepProgressBarProps {
   steps: OnboardingStep[];
@@ -14,6 +15,8 @@ const StepProgressBar: React.FC<StepProgressBarProps> = ({
   stepLabels,
 }) => {
   const currentStepIndex = steps.indexOf(currentStep);
+  // Calculate progress percentage
+  const progressPercentage = (currentStepIndex / (steps.length - 1)) * 100;
 
   return (
     <div className="mb-6 sm:mb-8">
@@ -21,12 +24,12 @@ const StepProgressBar: React.FC<StepProgressBarProps> = ({
         {steps.map((step, index) => (
           <div 
             key={step} 
-            className={`flex flex-col items-center ${index <= currentStepIndex ? 'text-primary' : 'text-gray-400'}`}
+            className={`flex flex-col items-center ${index <= currentStepIndex ? 'text-[#1B677D]' : 'text-gray-400'}`}
           >
             <div 
               className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mb-1 
-                ${index < currentStepIndex ? 'bg-primary text-white' : 
-                  index === currentStepIndex ? 'border-2 border-primary text-primary' : 
+                ${index < currentStepIndex ? 'bg-[#1B677D] text-white' : 
+                  index === currentStepIndex ? 'border-2 border-[#1B677D] text-[#1B677D]' : 
                   'border-2 border-gray-300 text-gray-400'}`}
             >
               {index + 1}
@@ -35,12 +38,7 @@ const StepProgressBar: React.FC<StepProgressBarProps> = ({
           </div>
         ))}
       </div>
-      <div className="w-full bg-gray-200 h-2 rounded-full">
-        <div 
-          className="bg-primary h-2 rounded-full transition-all duration-300" 
-          style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
-        />
-      </div>
+      <Progress value={progressPercentage} className="h-2" />
     </div>
   );
 };

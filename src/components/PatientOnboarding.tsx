@@ -1,6 +1,6 @@
 
 import React from 'react';
-import OnboardingForm from '@/components/patient-onboarding/OnboardingForm';
+import { OnboardingForm } from '@/components/patient-onboarding';
 
 const PatientOnboarding = () => {
   return <OnboardingForm />;

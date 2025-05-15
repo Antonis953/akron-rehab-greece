@@ -3,6 +3,11 @@ import React from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from "@/components/ui/progress";
+
+// Brand colors
+const PRIMARY_COLOR = "#1B677D";
+const SECONDARY_COLOR = "#90B7C2";
 
 const PatientDashboard = () => {
   // Mock data for a patient's exercises
@@ -39,7 +44,7 @@ const PatientDashboard = () => {
   return (
     <DashboardLayout userRole="patient">
       <div className="space-y-6 animate-fade-in">
-        <h1 className="text-2xl font-bold">Καλώς ήρθατε στο πρόγραμμα αποκατάστασής σας</h1>
+        <h1 className="text-2xl font-bold" style={{ color: PRIMARY_COLOR }}>Καλώς ήρθατε στο πρόγραμμα αποκατάστασής σας</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <Card>
@@ -47,7 +52,7 @@ const PatientDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-500">Ημέρα Προγράμματος</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-accent">3/7</div>
+              <div className="text-3xl font-bold" style={{ color: SECONDARY_COLOR }}>3/7</div>
               <p className="text-sm text-gray-500 mt-1">Εβδομάδα 1</p>
             </CardContent>
           </Card>
@@ -57,10 +62,8 @@ const PatientDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-500">Πρόοδος Εβδομάδας</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                <div className="bg-accent h-2.5 rounded-full" style={{ width: "43%" }}></div>
-              </div>
-              <div className="text-xl font-bold text-accent">43%</div>
+              <Progress value={43} className="h-2.5 mb-2" />
+              <div className="text-xl font-bold" style={{ color: SECONDARY_COLOR }}>43%</div>
             </CardContent>
           </Card>
           
@@ -79,7 +82,7 @@ const PatientDashboard = () => {
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Σημερινές Ασκήσεις</CardTitle>
+                <CardTitle style={{ color: PRIMARY_COLOR }}>Σημερινές Ασκήσεις</CardTitle>
                 <Button variant="outline" size="sm">Δείτε όλο το πρόγραμμα</Button>
               </div>
             </CardHeader>
@@ -108,13 +111,17 @@ const PatientDashboard = () => {
                           </div>
                         </div>
                       </div>
-                      <Button variant={exercise.completed ? "outline" : "default"} size="sm">
+                      <Button 
+                        variant={exercise.completed ? "outline" : "default"}
+                        style={exercise.completed ? {} : { backgroundColor: PRIMARY_COLOR }}
+                        size="sm"
+                      >
                         {exercise.completed ? 'Ολοκληρώθηκε' : 'Έναρξη'}
                       </Button>
                     </div>
                     <p className="mt-2 text-sm text-gray-600">{exercise.description}</p>
                     <div className="mt-3">
-                      <a href="#" className="text-sm text-primary font-medium flex items-center">
+                      <a href="#" className="text-sm font-medium flex items-center" style={{ color: PRIMARY_COLOR }}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
@@ -131,7 +138,7 @@ const PatientDashboard = () => {
         <div className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Ημερήσια Ερώτηση</CardTitle>
+              <CardTitle style={{ color: PRIMARY_COLOR }}>Ημερήσια Ερώτηση</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 mb-4">Πώς αισθάνεστε σήμερα; Παρακαλούμε αξιολογήστε το επίπεδο του πόνου σας.</p>
@@ -144,13 +151,14 @@ const PatientDashboard = () => {
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
                     <button 
                       key={level} 
-                      className={`flex-1 py-2 rounded-md border ${level === 3 ? 'bg-primary text-white border-primary' : 'border-gray-300 hover:border-primary hover:bg-primary/5'}`}
+                      className={`flex-1 py-2 rounded-md border ${level === 3 ? 'text-white border-[#1B677D]' : 'border-gray-300 hover:border-[#1B677D] hover:bg-[#1B677D]/5'}`}
+                      style={{ backgroundColor: level === 3 ? PRIMARY_COLOR : undefined }}
                     >
                       {level}
                     </button>
                   ))}
                 </div>
-                <Button className="w-full mt-2">Υποβολή</Button>
+                <Button className="w-full mt-2" style={{ backgroundColor: PRIMARY_COLOR }}>Υποβολή</Button>
               </div>
             </CardContent>
           </Card>

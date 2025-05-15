@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Progress } from "@/components/ui/progress";
 
 // Step Components
 import PersonalInfoStep from '@/components/onboarding-steps/PersonalInfoStep';
@@ -41,6 +42,10 @@ const requiredFieldsByStep = {
   'appointment': ['nextAppointment'],
 };
 
+// Brand colors
+const PRIMARY_COLOR = "#1B677D";
+const SECONDARY_COLOR = "#90B7C2";
+
 const PhysiotherapistPatientCreation = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -73,6 +78,9 @@ const PhysiotherapistPatientCreation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentStepIndex = steps.indexOf(currentStep);
+
+  // Progress percentage calculation
+  const progressPercentage = (currentStepIndex / (steps.length - 1)) * 100;
 
   // Έλεγχος εγκυρότητας τρέχοντος βήματος
   useEffect(() => {
@@ -134,15 +142,18 @@ const PhysiotherapistPatientCreation = () => {
     try {
       setIsSubmitting(true);
       
-      // Here we would save the data to Supabase in a real implementation
-      // Create the patient account automatically
+      // For Supabase integration:
+      // 1. Create patient account in auth
+      // 2. Generate temporary password
+      // 3. Store patient data in the database
+      // 4. Send welcome email with login instructions
+      
       console.log('Creating patient account:', formData);
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast.success('Ο λογαριασμός του ασθενή δημιουργήθηκε με επιτυχία!');
-      toast.info('Έχει αποσταλεί email με οδηγίες σύνδεσης στον ασθενή.');
+      toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       
       navigate('/dashboard/physiotherapist');
     } catch (error) {
@@ -171,8 +182,8 @@ const PhysiotherapistPatientCreation = () => {
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 animate-fade-in">
       <div className="flex items-center gap-2 mb-4">
-        <ClipboardList className="h-6 w-6 text-primary" />
-        <h1 className="text-xl sm:text-2xl font-bold text-primary">Δημιουργία Νέου Ασθενή</h1>
+        <ClipboardList className="h-6 w-6" style={{ color: PRIMARY_COLOR }} />
+        <h1 className="text-xl sm:text-2xl font-bold" style={{ color: PRIMARY_COLOR }}>Δημιουργία Νέου Ασθενή</h1>
       </div>
       
       <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
@@ -185,13 +196,18 @@ const PhysiotherapistPatientCreation = () => {
           {steps.map((step, index) => (
             <div 
               key={step} 
-              className={`flex flex-col items-center ${index <= currentStepIndex ? 'text-primary' : 'text-gray-400'}`}
+              className={`flex flex-col items-center ${index <= currentStepIndex ? `text-[${PRIMARY_COLOR}]` : 'text-gray-400'}`}
             >
               <div 
                 className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mb-1 
-                  ${index < currentStepIndex ? 'bg-primary text-white' : 
-                    index === currentStepIndex ? 'border-2 border-primary text-primary' : 
+                  ${index < currentStepIndex ? `bg-[${PRIMARY_COLOR}] text-white` : 
+                    index === currentStepIndex ? `border-2 border-[${PRIMARY_COLOR}] text-[${PRIMARY_COLOR}]` : 
                     'border-2 border-gray-300 text-gray-400'}`}
+                style={{
+                  backgroundColor: index < currentStepIndex ? PRIMARY_COLOR : 'transparent',
+                  borderColor: index <= currentStepIndex ? PRIMARY_COLOR : undefined,
+                  color: index < currentStepIndex ? 'white' : index === currentStepIndex ? PRIMARY_COLOR : undefined
+                }}
               >
                 {index + 1}
               </div>
@@ -199,17 +215,12 @@ const PhysiotherapistPatientCreation = () => {
             </div>
           ))}
         </div>
-        <div className="w-full bg-gray-200 h-2 rounded-full">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300" 
-            style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
-          />
-        </div>
+        <Progress value={progressPercentage} className="h-2" />
       </div>
 
       {/* Current step content */}
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-primary">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: PRIMARY_COLOR }}>
           {stepLabels[currentStep]}
         </h2>
         {renderStep()}
@@ -232,7 +243,8 @@ const PhysiotherapistPatientCreation = () => {
           <Button
             type="button"
             onClick={handleNext}
-            className="bg-primary hover:bg-primary/90 text-white"
+            className="text-white"
+            style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR }}
             size={isMobile ? "sm" : "default"}
             disabled={!isStepValid && requiredFieldsByStep[currentStep].length > 0}
           >
@@ -242,7 +254,8 @@ const PhysiotherapistPatientCreation = () => {
           <Button
             type="button"
             onClick={handleSubmit}
-            className="bg-accent hover:bg-accent/90 text-white"
+            className="text-white"
+            style={{ backgroundColor: SECONDARY_COLOR, borderColor: SECONDARY_COLOR }}
             size={isMobile ? "sm" : "default"}
             disabled={!isStepValid || isSubmitting}
           >

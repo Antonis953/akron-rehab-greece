@@ -5,7 +5,7 @@ import StepProgressBar from './StepProgressBar';
 import StepNavigation from './StepNavigation';
 import StepContent from './StepContent';
 import { useOnboardingForm } from './useOnboardingForm';
-import { stepLabels } from './types';
+import { stepLabels, requiredFieldsByStep } from './types';
 
 const OnboardingForm = () => {
   const isMobile = useIsMobile();
