@@ -1,9 +1,10 @@
 
 import React, { PropsWithChildren } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 import { Button } from './ui/button';
 import { UserRole } from '@/types';
+import { User, Calendar, ProgressBar, ClipboardList, Plus } from 'lucide-react';
 
 interface DashboardLayoutProps extends PropsWithChildren {
   userRole: UserRole;
@@ -11,8 +12,13 @@ interface DashboardLayoutProps extends PropsWithChildren {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isPhysiotherapist = userRole === 'physiotherapist';
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,7 +39,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
       <div className="flex flex-1">
         <aside className="w-64 bg-gray-50 border-r hidden md:block">
           <nav className="p-4 space-y-1">
-            <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+            <a 
+              href={isPhysiotherapist ? "/dashboard/physiotherapist" : "/dashboard/patient"} 
+              className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
+                isActive(isPhysiotherapist ? "/dashboard/physiotherapist" : "/dashboard/patient") 
+                  ? "bg-gray-100 text-primary font-medium" 
+                  : "text-gray-700"
+              }`}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
@@ -42,16 +55,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
 
             {isPhysiotherapist ? (
               <>
-                <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
+                <a 
+                  href="#" 
+                  className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                  <User className="h-5 w-5 mr-3" />
                   Ασθενείς
                 </a>
+                <a 
+                  href="/patients/new" 
+                  className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
+                    isActive("/patients/new") 
+                      ? "bg-gray-100 text-primary font-medium" 
+                      : "text-gray-700"
+                  }`}
+                >
+                  <Plus className="h-5 w-5 mr-3" />
+                  Νέος Ασθενής
+                </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
+                  <ClipboardList className="h-5 w-5 mr-3" />
                   Προγράμματα
                 </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
@@ -70,15 +93,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
                   Το Πρόγραμμά μου
                 </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
+                  <ProgressBar className="h-5 w-5 mr-3" />
                   Πρόοδος
                 </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <Calendar className="h-5 w-5 mr-3" />
                   Ημερολόγιο
                 </a>
               </>

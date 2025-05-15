@@ -1,35 +1,29 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import PhysiotherapistOnboardingPage from "./pages/PhysiotherapistOnboardingPage";
-import PatientOnboardingPage from "./pages/PatientOnboardingPage";
-import PhysiotherapistDashboard from "./pages/PhysiotherapistDashboard";
-import PatientDashboard from "./pages/PatientDashboard";
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import Index from './pages/Index';
+import NotFound from './pages/NotFound';
+import PatientOnboardingPage from './pages/PatientOnboardingPage';
+import PhysiotherapistOnboardingPage from './pages/PhysiotherapistOnboardingPage';
+import PatientDashboard from './pages/PatientDashboard';
+import PhysiotherapistDashboard from './pages/PhysiotherapistDashboard';
+import PatientCreationPage from './pages/PatientCreationPage';
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/onboarding/physiotherapist" element={<PhysiotherapistOnboardingPage />} />
-          <Route path="/onboarding/patient" element={<PatientOnboardingPage />} />
-          <Route path="/dashboard/physiotherapist" element={<PhysiotherapistDashboard />} />
-          <Route path="/dashboard/patient" element={<PatientDashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/onboarding/patient" element={<PatientOnboardingPage />} />
+        <Route path="/onboarding/physiotherapist" element={<PhysiotherapistOnboardingPage />} />
+        <Route path="/dashboard/patient" element={<PatientDashboard />} />
+        <Route path="/dashboard/physiotherapist" element={<PhysiotherapistDashboard />} />
+        <Route path="/patients/new" element={<PatientCreationPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster position="top-right" richColors />
+    </BrowserRouter>
+  );
+};
 
 export default App;

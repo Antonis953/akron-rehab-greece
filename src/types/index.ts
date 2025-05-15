@@ -12,9 +12,13 @@ export interface Patient {
   limitations: string;
   goals: string;
   medicalHistory: string;
-  physiotherapistId: string;
+  problemArea: string;
+  problemDescription: string;
   createdAt: string;
   updatedAt: string;
+  nextAppointment: string | null;
+  status: 'new' | 'active' | 'inactive' | 'completed';
+  physiotherapistId: string;
 }
 
 export interface Physiotherapist {
@@ -58,4 +62,21 @@ export interface RehabProgram {
   exercises: Exercise[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PatientCreationFormData {
+  name: string;
+  age: number;
+  gender: string;
+  email: string;
+  phoneNumber: string;
+  problemArea: string;
+  problemDescription: string;
+  injuryDate: Date | null;
+  painLevel: number;
+  morningPain: boolean;
+  nightPain: boolean;
+  worseningFactors: string;
+  relievingFactors: string;
+  nextAppointment: Date | null;
 }
