@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -17,19 +16,9 @@ const physiotherapistFormSchema = z.object({
   email: z.string().email({
     message: 'Παρακαλώ εισάγετε έγκυρο email.',
   }),
-  phoneNumber: z.string().min(10, {
-    message: 'Παρακαλώ εισάγετε έγκυρο αριθμό τηλεφώνου.',
-  }),
-  specialization: z.string().min(2, {
-    message: 'Παρακαλώ εισάγετε την ειδίκευσή σας.',
-  }),
-  licenseNumber: z.string().min(2, {
-    message: 'Παρακαλώ εισάγετε τον αριθμό άδειας σας.',
-  }),
-  clinic: z.string().min(2, {
-    message: 'Παρακαλώ εισάγετε το όνομα της κλινικής σας.',
-  }),
-  bio: z.string().optional(),
+  password: z.string().min(8, {
+    message: 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.',
+  })
 });
 
 type PhysiotherapistFormValues = z.infer<typeof physiotherapistFormSchema>;
@@ -41,11 +30,7 @@ const PhysiotherapistOnboarding = () => {
     defaultValues: {
       name: '',
       email: '',
-      phoneNumber: '',
-      specialization: '',
-      licenseNumber: '',
-      clinic: '',
-      bio: '',
+      password: ''
     },
   });
 
@@ -66,123 +51,68 @@ const PhysiotherapistOnboarding = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 animate-fade-in">
-      <h1 className="text-2xl font-bold mb-6 text-center">Εγγραφή Φυσιοθεραπευτή</h1>
-      <p className="text-gray-600 mb-8 text-center">
+    <div className="max-w-md mx-auto p-6 animate-fade-in">
+      <h1 className="text-2xl font-bold mb-2 text-center">Γρήγορη Εγγραφή</h1>
+      <p className="text-gray-600 mb-6 text-center">
         Συμπληρώστε τα παρακάτω στοιχεία για να δημιουργήσετε τον λογαριασμό σας
       </p>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ονοματεπώνυμο</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Γιάννης Παπαδόπουλος" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="example@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Τηλέφωνο</FormLabel>
-                  <FormControl>
-                    <Input placeholder="6912345678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="specialization"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ειδίκευση</FormLabel>
-                  <FormControl>
-                    <Input placeholder="π.χ. Αθλητική Φυσιοθεραπεία" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="licenseNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Αριθμός Άδειας</FormLabel>
-                  <FormControl>
-                    <Input placeholder="π.χ. ΦΤ-12345" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="clinic"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Κλινική / Ιατρείο</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Όνομα κλινικής" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <FormField
             control={form.control}
-            name="bio"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Βιογραφικό Σημείωμα (προαιρετικό)</FormLabel>
+                <FormLabel>Ονοματεπώνυμο</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Σύντομη περιγραφή της εμπειρίας και των ειδικεύσεών σας" 
-                    className="min-h-[120px]" 
-                    {...field} 
-                  />
+                  <Input placeholder="Γιάννης Παπαδόπουλος" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="flex justify-end">
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Ολοκλήρωση Εγγραφής
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="example@email.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Κωδικός Πρόσβασης</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Τουλάχιστον 8 χαρακτήρες" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="mt-6">
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              Δημιουργία Λογαριασμού
             </Button>
           </div>
+          
+          <p className="text-xs text-center text-gray-500 mt-4">
+            Περισσότερες πληροφορίες θα σας ζητηθούν μετά την εγγραφή, στο dashboard σας.
+          </p>
         </form>
       </Form>
     </div>
