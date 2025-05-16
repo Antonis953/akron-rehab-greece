@@ -94,7 +94,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
                   Το Πρόγραμμά μου
                 </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
-                  <Progress className="h-5 w-5 mr-3" />
+                  <Progress className="h-5 w-5 mr-3" value={50} />
                   Πρόοδος
                 </a>
                 <a href="#" className="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
