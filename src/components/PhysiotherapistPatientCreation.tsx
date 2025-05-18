@@ -148,12 +148,14 @@ const PhysiotherapistPatientCreation = () => {
       
       console.log('Δημιουργία λογαριασμού ασθενή στο Supabase:', { full_name, email, phone });
       
-      // Insert patient data into the patients table with explicit return
+      // Fix: Insert a single object instead of an array of objects
       const { data, error } = await supabase
         .from('patients')
-        .insert([
-          { full_name, email, phone }
-        ])
+        .insert({
+          full_name, 
+          email, 
+          phone
+        })
         .select();
       
       if (error) {

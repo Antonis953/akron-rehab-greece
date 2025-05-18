@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { BRAND_COLORS } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
-// Define the Patient interface
+// Define the Patient interface based on Supabase DB schema
 interface Patient {
   id: string;
   full_name: string;
@@ -37,7 +36,10 @@ const PatientList = () => {
       }
       
       console.log('Ανακτήθηκαν ασθενείς:', data);
-      setPatients(data || []);
+      
+      // Ensure data is properly typed as Patient[]
+      const typedPatients: Patient[] = data || [];
+      setPatients(typedPatients);
     } catch (error) {
       console.error('Σφάλμα κατά τη λήψη των ασθενών:', error);
     } finally {
@@ -181,7 +183,7 @@ const PatientList = () => {
                       className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
                       style={{ backgroundColor: `${BRAND_COLORS.secondary}30`, color: BRAND_COLORS.primary }}
                     >
-                      Νέος λογαριασμός
+                      Νέος λο��αριασμός
                     </span>
                   ) : (
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
