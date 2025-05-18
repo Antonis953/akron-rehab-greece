@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Progress } from "@/components/ui/progress";
+import { supabase } from '@/integrations/supabase/client';
+import { BRAND_COLORS } from '@/lib/utils';
 
 // Step Components
 import PersonalInfoStep from '@/components/onboarding-steps/PersonalInfoStep';
@@ -42,9 +44,8 @@ const requiredFieldsByStep = {
   'appointment': ['nextAppointment'],
 };
 
-// Brand colors
-const PRIMARY_COLOR = "#1B677D";
-const SECONDARY_COLOR = "#90B7C2";
+const PRIMARY_COLOR = BRAND_COLORS.primary;
+const SECONDARY_COLOR = BRAND_COLORS.secondary;
 
 const PhysiotherapistPatientCreation = () => {
   const navigate = useNavigate();
@@ -142,16 +143,25 @@ const PhysiotherapistPatientCreation = () => {
     try {
       setIsSubmitting(true);
       
-      // For Supabase integration:
-      // 1. Create patient account in auth
-      // 2. Generate temporary password
-      // 3. Store patient data in the database
-      // 4. Send welcome email with login instructions
-      
+      // Create new patient in Supabase
       console.log('Creating patient account:', formData);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Extract required data for patient creation
+      const { name: full_name, email, phoneNumber: phone } = formData;
+      
+      // Insert patient data into the patients table
+      const { data, error } = await supabase
+        .from('patients')
+        .insert([
+          { full_name, email, phone }
+        ])
+        .select();
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      console.log('Patient created successfully:', data);
       
       toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       
@@ -196,17 +206,15 @@ const PhysiotherapistPatientCreation = () => {
           {steps.map((step, index) => (
             <div 
               key={step} 
-              className={`flex flex-col items-center ${index <= currentStepIndex ? `text-[${PRIMARY_COLOR}]` : 'text-gray-400'}`}
+              className="flex flex-col items-center"
+              style={{ color: index <= currentStepIndex ? PRIMARY_COLOR : 'rgb(156, 163, 175)' }}
             >
               <div 
-                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mb-1 
-                  ${index < currentStepIndex ? `bg-[${PRIMARY_COLOR}] text-white` : 
-                    index === currentStepIndex ? `border-2 border-[${PRIMARY_COLOR}] text-[${PRIMARY_COLOR}]` : 
-                    'border-2 border-gray-300 text-gray-400'}`}
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mb-1 border-2"
                 style={{
                   backgroundColor: index < currentStepIndex ? PRIMARY_COLOR : 'transparent',
-                  borderColor: index <= currentStepIndex ? PRIMARY_COLOR : undefined,
-                  color: index < currentStepIndex ? 'white' : index === currentStepIndex ? PRIMARY_COLOR : undefined
+                  borderColor: index <= currentStepIndex ? PRIMARY_COLOR : 'rgb(209, 213, 219)',
+                  color: index < currentStepIndex ? 'white' : index === currentStepIndex ? PRIMARY_COLOR : 'rgb(156, 163, 175)'
                 }}
               >
                 {index + 1}
@@ -215,7 +223,10 @@ const PhysiotherapistPatientCreation = () => {
             </div>
           ))}
         </div>
-        <Progress value={progressPercentage} className="h-2" />
+        <Progress value={progressPercentage} className="h-2" style={{ 
+          backgroundColor: 'rgb(229, 231, 235)',
+          '--progress-background': PRIMARY_COLOR 
+        } as React.CSSProperties} />
       </div>
 
       {/* Current step content */}

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingStep, FormData, requiredFieldsByStep } from './types';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps: OnboardingStep[] = [
   'personal',
@@ -118,12 +119,24 @@ export const useOnboardingForm = () => {
   const handleSubmit = async () => {
     try {
       console.log('Patient data:', formData);
-      // In a real implementation with Supabase, we would:
-      // 1. Create the patient account in the auth system
-      // 2. Store all patient data in the database
-      // 3. Send activation email
       
-      // For now, we'll show the success message
+      // Store patient data in Supabase
+      const { data, error } = await supabase
+        .from('patients')
+        .insert([
+          { 
+            full_name: formData.name,
+            email: formData.email,
+            phone: formData.phoneNumber
+          }
+        ]);
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        toast.error('Προέκυψε ένα σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.');
+        return;
+      }
+      
       toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       navigate('/dashboard/patient');
     } catch (error) {
