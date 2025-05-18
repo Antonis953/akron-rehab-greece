@@ -148,15 +148,17 @@ const PhysiotherapistPatientCreation = () => {
       
       console.log('Creating patient account in Supabase:', { full_name, email, phone });
       
-      // Insert patient data into the patients table
+      // Insert patient data into the patients table with explicit return
       const { data, error } = await supabase
         .from('patients')
         .insert([
           { full_name, email, phone }
-        ]);
+        ])
+        .select();
       
       if (error) {
         console.error('Supabase error:', error);
+        toast.error(`Προέκυψε ένα σφάλμα: ${error.message}`);
         throw new Error(error.message);
       }
       
