@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ClipboardList, User, CalendarCheck } from 'lucide-react';
-import { Progress } from "@/components/ui/progress";
+import PatientList from '@/components/dashboard/PatientList';
 
 // Brand colors
 const PRIMARY_COLOR = "#1B677D";
@@ -70,111 +69,8 @@ const PhysiotherapistDashboard = () => {
             <h2 className="text-xl font-semibold" style={{ color: PRIMARY_COLOR }}>Πρόσφατοι Ασθενείς</h2>
           </div>
 
-          <div className="bg-white rounded-md shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Όνομα</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Κατάσταση</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Πρόοδος</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Τελευταία Ενημέρωση</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ενέργειες</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
-                        ΓΠ
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">Γιώργος Παπαδόπουλος</div>
-                        <div className="text-xs text-gray-500">45 ετών</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Σε εξέλιξη
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Progress value={75} className="h-2 mb-1" />
-                    <span className="text-xs text-gray-600">75%</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    14/05/2025
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="hover:text-primary/80" style={{ color: PRIMARY_COLOR }}>Προβολή</button>
-                  </td>
-                </tr>
-                <tr className="bg-blue-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${SECONDARY_COLOR}40`, color: PRIMARY_COLOR }}>
-                        ΜΚ
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">Μαρία Κωνσταντίνου</div>
-                        <div className="text-xs text-gray-500">32 ετών</div>
-                        <span className="px-2 py-0.5 mt-1 inline-flex text-xs leading-4 font-medium rounded-full" 
-                              style={{ backgroundColor: `${SECONDARY_COLOR}30`, color: PRIMARY_COLOR }}>
-                          Νέος ασθενής
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
-                          style={{ backgroundColor: `${SECONDARY_COLOR}30`, color: PRIMARY_COLOR }}>
-                      Νέος λογαριασμός
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Progress value={10} className="h-2 mb-1" />
-                    <span className="text-xs text-gray-600">10%</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    13/05/2025
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="hover:text-primary/80 mr-3" style={{ color: PRIMARY_COLOR }}>Προβολή</button>
-                    <button className="hover:text-accent/80" style={{ color: SECONDARY_COLOR }}>Δημιουργία προγράμματος</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
-                        ΑΠ
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">Αντώνης Παναγιώτου</div>
-                        <div className="text-xs text-gray-500">57 ετών</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                      Αξιολόγηση
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Progress value={40} className="h-2 mb-1" />
-                    <span className="text-xs text-gray-600">40%</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    10/05/2025
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="hover:text-primary/80" style={{ color: PRIMARY_COLOR }}>Προβολή</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {/* Replace the static patient table with our dynamic PatientList component */}
+          <PatientList />
         </div>
         
         <div className="mt-8 space-y-4">
@@ -201,6 +97,7 @@ const PhysiotherapistDashboard = () => {
                     <div className="text-xs text-gray-500">45 λεπτά</div>
                   </div>
                 </div>
+                
                 <div className="flex items-center justify-between p-4">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-3">
@@ -216,6 +113,7 @@ const PhysiotherapistDashboard = () => {
                     <div className="text-xs text-gray-500">60 λεπτά</div>
                   </div>
                 </div>
+                
                 <div className="flex items-center justify-between p-4">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full flex items-center justify-center mr-3" 

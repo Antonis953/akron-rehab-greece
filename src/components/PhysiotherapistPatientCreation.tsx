@@ -146,7 +146,7 @@ const PhysiotherapistPatientCreation = () => {
       // Extract required data for patient creation
       const { name: full_name, email, phoneNumber: phone } = formData;
       
-      console.log('Creating patient account in Supabase:', { full_name, email, phone });
+      console.log('Δημιουργία λογαριασμού ασθενή στο Supabase:', { full_name, email, phone });
       
       // Insert patient data into the patients table with explicit return
       const { data, error } = await supabase
@@ -157,18 +157,19 @@ const PhysiotherapistPatientCreation = () => {
         .select();
       
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Σφάλμα Supabase:', error);
         toast.error(`Προέκυψε ένα σφάλμα: ${error.message}`);
         throw new Error(error.message);
       }
       
-      console.log('Patient created successfully:', data);
+      console.log('Ο ασθενής δημιουργήθηκε με επιτυχία:', data);
       
       toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       
+      // This will trigger the useEffect with the realtime subscription in PatientList
       navigate('/dashboard/physiotherapist');
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Σφάλμα κατά την υποβολή της φόρμας:', error);
       toast.error('Προέκυψε ένα σφάλμα κατά τη δημιουργία του λογαριασμού. Παρακαλώ δοκιμάστε ξανά.');
     } finally {
       setIsSubmitting(false);
