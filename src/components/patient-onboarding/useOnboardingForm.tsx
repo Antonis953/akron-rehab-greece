@@ -118,7 +118,7 @@ export const useOnboardingForm = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log('Patient data:', formData);
+      console.log('Submitting patient data to Supabase:', formData);
       
       // Store patient data in Supabase
       const { data, error } = await supabase
@@ -136,6 +136,8 @@ export const useOnboardingForm = () => {
         toast.error('Προέκυψε ένα σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.');
         return;
       }
+      
+      console.log('Patient data successfully stored in Supabase:', data);
       
       toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       navigate('/dashboard/patient');

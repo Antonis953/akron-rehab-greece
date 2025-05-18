@@ -143,21 +143,20 @@ const PhysiotherapistPatientCreation = () => {
     try {
       setIsSubmitting(true);
       
-      // Create new patient in Supabase
-      console.log('Creating patient account:', formData);
-      
       // Extract required data for patient creation
       const { name: full_name, email, phoneNumber: phone } = formData;
+      
+      console.log('Creating patient account in Supabase:', { full_name, email, phone });
       
       // Insert patient data into the patients table
       const { data, error } = await supabase
         .from('patients')
         .insert([
           { full_name, email, phone }
-        ])
-        .select();
+        ]);
       
       if (error) {
+        console.error('Supabase error:', error);
         throw new Error(error.message);
       }
       
