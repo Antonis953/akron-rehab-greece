@@ -42,3 +42,13 @@ export const requiredFieldsByStep = {
   'symptoms': ['painLevel'],
   'appointment': [], // Made empty to allow skipping appointment date
 };
+
+// Add a new interface that matches the Supabase patients table exactly
+export interface Patient {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  next_session_date: string | null;
+  created_at: string | null;
+}

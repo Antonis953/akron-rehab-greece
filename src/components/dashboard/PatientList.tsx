@@ -6,10 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { BRAND_COLORS } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import PatientSupabaseService from '@/services/PatientSupabaseService';
-import { Database } from '@/integrations/supabase/types';
-
-// Define the Patient interface to match Supabase schema
-type Patient = Database['public']['Tables']['patients']['Row'];
+import { Patient } from '@/types/patient';
 
 const PatientList = () => {
   const navigate = useNavigate();

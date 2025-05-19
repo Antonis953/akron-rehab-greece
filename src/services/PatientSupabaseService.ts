@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { PatientFormData } from '@/types/patient';
+import { PatientFormData, Patient } from '@/types/patient';
 import { Database } from '@/integrations/supabase/types';
 
-type Patient = Database['public']['Tables']['patients']['Row'];
+type PatientInsert = Database['public']['Tables']['patients']['Insert'];
 
 export const PatientSupabaseService = {
   /**
@@ -15,16 +15,16 @@ export const PatientSupabaseService = {
   async createPatient(patientData: PatientFormData): Promise<Patient | null> {
     try {
       // Format the next appointment date properly for Supabase (YYYY-MM-DD)
-      const next_session_date = patientData.nextAppointment 
-        ? patientData.nextAppointment.toISOString().split('T')[0] 
-        : null;
+      const formatDate = (date: Date): string => {
+        return date.toISOString().split('T')[0];
+      };
       
       // Map from our internal form schema to Supabase table schema
-      const patientRecord = {
+      const patientRecord: PatientInsert = {
         full_name: patientData.name,
         email: patientData.email,
-        phone: patientData.phoneNumber,
-        next_session_date
+        phone: patientData.phoneNumber || null,
+        next_session_date: patientData.nextAppointment ? formatDate(patientData.nextAppointment) : null
       };
       
       console.log('Creating patient in Supabase:', patientRecord);
@@ -32,7 +32,7 @@ export const PatientSupabaseService = {
       const { data, error } = await supabase
         .from('patients')
         .insert(patientRecord)
-        .select('*')
+        .select()
         .single();
       
       if (error) {
@@ -42,7 +42,7 @@ export const PatientSupabaseService = {
       }
       
       console.log('Patient created successfully:', data);
-      return data;
+      return data as Patient;
     } catch (error) {
       console.error('Error creating patient:', error);
       toast.error('Προέκυψε ένα σφάλμα κατά τη δημιουργία του λογαριασμού.');
@@ -66,7 +66,7 @@ export const PatientSupabaseService = {
         return [];
       }
       
-      return data || [];
+      return data as Patient[];
     } catch (error) {
       console.error('Error fetching patients:', error);
       return [];
