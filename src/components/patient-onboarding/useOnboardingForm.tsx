@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingStep, FormData, requiredFieldsByStep } from './types';
-import { supabase } from '@/integrations/supabase/client';
+import PatientSupabaseService from '@/services/PatientSupabaseService';
 
 const steps: OnboardingStep[] = [
   'personal',
@@ -120,31 +120,30 @@ export const useOnboardingForm = () => {
     try {
       console.log('Submitting patient data to Supabase:', formData);
       
-      // Format the next appointment date properly for Supabase (YYYY-MM-DD)
-      const next_session_date = formData.nextAppointment 
-        ? new Date(formData.nextAppointment).toISOString().split('T')[0] 
-        : null;
+      // Use our service to create the patient
+      const patientFormData = {
+        name: formData.name,
+        age: formData.age,
+        gender: formData.gender,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        problemArea: formData.problemArea,
+        problemDescription: formData.problemDescription,
+        injuryDate: formData.injuryDate,
+        painLevel: formData.painLevel,
+        morningPain: formData.morningPain,
+        nightPain: formData.nightPain,
+        worseningFactors: formData.worseningFactors,
+        relievingFactors: formData.relievingFactors,
+        nextAppointment: formData.nextAppointment,
+      };
       
-      const { data, error } = await supabase
-        .from('patients')
-        .insert({
-          full_name: formData.name,
-          email: formData.email,
-          phone: formData.phoneNumber,
-          next_session_date: next_session_date
-        })
-        .select();
+      const newPatient = await PatientSupabaseService.createPatient(patientFormData);
       
-      if (error) {
-        console.error("Supabase error:", error);
-        toast.error('Προέκυψε ένα σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.');
-        return;
+      if (newPatient) {
+        toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
+        navigate('/dashboard/patient');
       }
-      
-      console.log('Patient data successfully stored in Supabase:', data);
-      
-      toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
-      navigate('/dashboard/patient');
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Προέκυψε ένα σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.');

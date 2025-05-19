@@ -12,8 +12,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   },
   realtime: {
-    channels: {
-      minimal: true, // Only subscribe to changes you explicitly define
-    }
+    // Configure realtime without the incorrect 'channels' property
+    minimal: true
   }
 });

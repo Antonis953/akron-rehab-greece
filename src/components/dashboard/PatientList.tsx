@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { BRAND_COLORS } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import PatientSupabaseService from '@/services/PatientSupabaseService';
 import { Database } from '@/integrations/supabase/types';
 
 // Define the Patient interface to match Supabase schema
@@ -23,19 +23,9 @@ const PatientList = () => {
       setError(null);
       console.log('Fetching patients from Supabase...');
       
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Σφάλμα κατά τη λήψη των ασθενών:', error);
-        setError('Σφάλμα κατά τη λήψη των ασθενών. Παρακαλώ δοκιμάστε ξανά.');
-        return;
-      }
-      
+      const data = await PatientSupabaseService.getAllPatients();
       console.log('Ανακτήθηκαν ασθενείς:', data);
-      setPatients(data || []);
+      setPatients(data);
     } catch (error) {
       console.error('Σφάλμα κατά τη λήψη των ασθενών:', error);
       setError('Σφάλμα κατά τη λήψη των ασθενών. Παρακαλώ δοκιμάστε ξανά.');
@@ -44,25 +34,19 @@ const PatientList = () => {
     }
   };
 
-  // Initial fetch on component mount
+  // Initial fetch on component mount and setup real-time subscription
   useEffect(() => {
     fetchPatients();
     
-    // Set up real-time subscription to patients table
-    const patientsSubscription = supabase
-      .channel('public:patients')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'patients' }, 
-        (payload) => {
-          console.log('Λήφθηκε αλλαγή σε πίνακα ασθενών:', payload);
-          fetchPatients(); // Refresh the list when changes occur
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription using our service
+    const unsubscribe = PatientSupabaseService.subscribeToPatients(() => {
+      console.log('Real-time update received, refreshing patient list...');
+      fetchPatients();
+    });
     
     // Clean up subscription on unmount
     return () => {
-      supabase.removeChannel(patientsSubscription);
+      unsubscribe();
     };
   }, []);
 
