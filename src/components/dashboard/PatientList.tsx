@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,24 +6,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { BRAND_COLORS } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
 
-// Define the Patient interface based on Supabase DB schema
-interface Patient {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string | null;
-  created_at: string | null;
-}
+// Define the Patient interface to match Supabase schema
+type Patient = Database['public']['Tables']['patients']['Row'];
 
 const PatientList = () => {
   const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPatients = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       console.log('Fetching patients from Supabase...');
       
       const { data, error } = await supabase
@@ -32,16 +30,15 @@ const PatientList = () => {
       
       if (error) {
         console.error('Σφάλμα κατά τη λήψη των ασθενών:', error);
+        setError('Σφάλμα κατά τη λήψη των ασθενών. Παρακαλώ δοκιμάστε ξανά.');
         return;
       }
       
       console.log('Ανακτήθηκαν ασθενείς:', data);
-      
-      // Ensure data is properly typed as Patient[]
-      const typedPatients: Patient[] = data || [];
-      setPatients(typedPatients);
+      setPatients(data || []);
     } catch (error) {
       console.error('Σφάλμα κατά τη λήψη των ασθενών:', error);
+      setError('Σφάλμα κατά τη λήψη των ασθενών. Παρακαλώ δοκιμάστε ξανά.');
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +87,29 @@ const PatientList = () => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-md shadow p-8 text-center">
+        <div className="flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium mb-2" style={{ color: BRAND_COLORS.primary }}>{error}</h3>
+          <button 
+            onClick={() => fetchPatients()} 
+            className="px-4 py-2 mt-4 rounded-md text-white"
+            style={{ backgroundColor: BRAND_COLORS.secondary }}
+          >
+            Δοκιμάστε ξανά
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Render loading state
   if (isLoading) {
@@ -183,7 +203,7 @@ const PatientList = () => {
                       className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
                       style={{ backgroundColor: `${BRAND_COLORS.secondary}30`, color: BRAND_COLORS.primary }}
                     >
-                      Νέος λο��αριασμός
+                      Νέος λογαριασμός
                     </span>
                   ) : (
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -119,14 +120,15 @@ export const useOnboardingForm = () => {
     try {
       console.log('Submitting patient data to Supabase:', formData);
       
-      // Fix: Insert a single object instead of an array of objects
       const { data, error } = await supabase
         .from('patients')
-        .insert({
-          full_name: formData.name,
-          email: formData.email,
-          phone: formData.phoneNumber
-        })
+        .insert([
+          { 
+            full_name: formData.name,
+            email: formData.email,
+            phone: formData.phoneNumber
+          }
+        ])
         .select();
       
       if (error) {
