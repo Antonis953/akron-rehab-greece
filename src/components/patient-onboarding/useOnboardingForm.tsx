@@ -120,15 +120,19 @@ export const useOnboardingForm = () => {
     try {
       console.log('Submitting patient data to Supabase:', formData);
       
+      // Format the next appointment date properly for Supabase (YYYY-MM-DD)
+      const next_session_date = formData.nextAppointment 
+        ? new Date(formData.nextAppointment).toISOString().split('T')[0] 
+        : null;
+      
       const { data, error } = await supabase
         .from('patients')
-        .insert([
-          { 
-            full_name: formData.name,
-            email: formData.email,
-            phone: formData.phoneNumber
-          }
-        ])
+        .insert({
+          full_name: formData.name,
+          email: formData.email,
+          phone: formData.phoneNumber,
+          next_session_date: next_session_date
+        })
         .select();
       
       if (error) {

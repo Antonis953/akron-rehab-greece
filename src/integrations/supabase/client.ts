@@ -10,5 +10,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+  },
+  realtime: {
+    channels: {
+      minimal: true, // Only subscribe to changes you explicitly define
+    }
   }
 });

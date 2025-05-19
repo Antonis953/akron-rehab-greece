@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -40,7 +41,7 @@ const requiredFieldsByStep = {
   'personal': ['name', 'email'],
   'problem-area': ['problemArea', 'problemDescription'],
   'symptoms': ['painLevel'],
-  'appointment': ['nextAppointment'],
+  'appointment': [], // Made empty to allow skipping appointment date
 };
 
 const PRIMARY_COLOR = BRAND_COLORS.primary;
@@ -143,15 +144,27 @@ const PhysiotherapistPatientCreation = () => {
       setIsSubmitting(true);
       
       // Extract required data for patient creation
-      const { name: full_name, email, phoneNumber: phone } = formData;
+      const { name: full_name, email, phoneNumber: phone, nextAppointment } = formData;
       
-      console.log('Δημιουργία λογαριασμού ασθενή στο Supabase:', { full_name, email, phone });
+      // Format the next appointment date properly for Supabase (YYYY-MM-DD)
+      // If nextAppointment is null, it will remain null in the insert
+      const next_session_date = nextAppointment ? nextAppointment.toISOString().split('T')[0] : null;
+      
+      console.log('Δημιουργία λογαριασμού ασθενή στο Supabase:', { 
+        full_name, 
+        email, 
+        phone,
+        next_session_date 
+      });
       
       const { data, error } = await supabase
         .from('patients')
-        .insert([
-          { full_name, email, phone }
-        ])
+        .insert({
+          full_name, 
+          email, 
+          phone,
+          next_session_date
+        })
         .select();
       
       if (error) {
@@ -164,7 +177,7 @@ const PhysiotherapistPatientCreation = () => {
       
       toast.success('Η εγγραφή του ασθενή ολοκληρώθηκε με επιτυχία και έχει σταλεί email με τα στοιχεία εισόδου.');
       
-      // This will trigger the useEffect with the realtime subscription in PatientList
+      // Navigate back to the dashboard
       navigate('/dashboard/physiotherapist');
     } catch (error) {
       console.error('Σφάλμα κατά την υποβολή της φόρμας:', error);
@@ -268,7 +281,7 @@ const PhysiotherapistPatientCreation = () => {
             className="text-white"
             style={{ backgroundColor: SECONDARY_COLOR, borderColor: SECONDARY_COLOR }}
             size={isMobile ? "sm" : "default"}
-            disabled={!isStepValid || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
