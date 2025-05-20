@@ -52,3 +52,33 @@ export interface Patient {
   next_session_date: string | null;
   created_at: string | null;
 }
+
+// Define rehabilitation program types
+export interface RehabProgram {
+  id: string;
+  patientId: string;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'completed' | 'pending';
+  days: RehabDay[];
+  createdAt: string;
+}
+
+export interface RehabDay {
+  id: string;
+  dayNumber: number;
+  date: string;
+  exercises: RehabExercise[];
+  completed: boolean;
+}
+
+export interface RehabExercise {
+  id: string;
+  name: string;
+  sets: number;
+  reps: number;
+  phase: 'isometric' | 'concentric' | 'eccentric' | 'plyometric';
+  difficulty: number;
+  source: string;
+  videoUrl: string;
+}

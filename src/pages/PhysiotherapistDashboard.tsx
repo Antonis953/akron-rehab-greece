@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, ClipboardList, User, CalendarCheck } from 'lucide-react';
+import { UserPlus, ClipboardList, User, Calendar } from 'lucide-react';
 import PatientList from '@/components/dashboard/PatientList';
 
 // Brand colors
@@ -12,21 +13,18 @@ const SECONDARY_COLOR = "#90B7C2";
 
 const PhysiotherapistDashboard = () => {
   const navigate = useNavigate();
-  // Mock data for a basic dashboard
-  const patientCount = 12;
-  const activePrograms = 8;
-  const completedPrograms = 24;
   
   return (
     <DashboardLayout userRole="physiotherapist">
       <div className="space-y-6 animate-fade-in">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold" style={{ color: PRIMARY_COLOR }}>Καλώς ήρθατε στο PhysioMind.ai</h1>
           <Button 
             onClick={() => navigate('/patients/new')} 
             style={{ backgroundColor: SECONDARY_COLOR }}
+            className="text-white hover:bg-opacity-90"
           >
-            <Plus className="h-4 w-4 mr-2" /> Νέος Ασθενής
+            <UserPlus className="h-4 w-4 mr-2" /> Νέος Ασθενής
           </Button>
         </div>
         
@@ -40,7 +38,7 @@ const PhysiotherapistDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-500">Σύνολο Ασθενών</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>{patientCount}</div>
+              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>12</div>
             </CardContent>
           </Card>
           
@@ -49,7 +47,7 @@ const PhysiotherapistDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-500">Ενεργά Προγράμματα</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>{activePrograms}</div>
+              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>8</div>
             </CardContent>
           </Card>
           
@@ -58,7 +56,7 @@ const PhysiotherapistDashboard = () => {
               <CardTitle className="text-sm font-medium text-gray-500">Ολοκληρωμένα Προγράμματα</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>{completedPrograms}</div>
+              <div className="text-3xl font-bold" style={{ color: PRIMARY_COLOR }}>24</div>
             </CardContent>
           </Card>
         </div>
@@ -66,16 +64,15 @@ const PhysiotherapistDashboard = () => {
         <div className="mt-8 space-y-6">
           <div className="flex items-center space-x-2">
             <User className="h-5 w-5" style={{ color: PRIMARY_COLOR }} />
-            <h2 className="text-xl font-semibold" style={{ color: PRIMARY_COLOR }}>Πρόσφατοι Ασθενείς</h2>
+            <h2 className="text-xl font-semibold" style={{ color: PRIMARY_COLOR }}>Ασθενείς</h2>
           </div>
 
-          {/* Replace the static patient table with our dynamic PatientList component */}
           <PatientList />
         </div>
         
         <div className="mt-8 space-y-4">
           <div className="flex items-center space-x-2">
-            <CalendarCheck className="h-5 w-5" style={{ color: PRIMARY_COLOR }} />
+            <Calendar className="h-5 w-5" style={{ color: PRIMARY_COLOR }} />
             <h2 className="text-xl font-semibold" style={{ color: PRIMARY_COLOR }}>Σημερινά Ραντεβού</h2>
           </div>
           

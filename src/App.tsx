@@ -8,6 +8,8 @@ import PhysiotherapistOnboardingPage from './pages/PhysiotherapistOnboardingPage
 import PatientDashboard from './pages/PatientDashboard';
 import PhysiotherapistDashboard from './pages/PhysiotherapistDashboard';
 import PatientCreationPage from './pages/PatientCreationPage';
+import PatientDetailPage from './pages/PatientDetailPage';
+import ProgramCreationPage from './pages/ProgramCreationPage';
 
 const App = () => {
   return (
@@ -19,6 +21,8 @@ const App = () => {
         <Route path="/dashboard/patient" element={<PatientDashboard />} />
         <Route path="/dashboard/physiotherapist" element={<PhysiotherapistDashboard />} />
         <Route path="/patients/new" element={<PatientCreationPage />} />
+        <Route path="/patients/:patientId" element={<PatientDetailPage />} />
+        <Route path="/programs/new/:patientId" element={<ProgramCreationPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster position="top-right" richColors />

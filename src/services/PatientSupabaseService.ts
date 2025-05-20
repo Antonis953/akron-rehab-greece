@@ -51,6 +51,31 @@ export const PatientSupabaseService = {
   },
   
   /**
+   * Get a patient by ID from the Supabase database
+   * @param patientId The ID of the patient to retrieve
+   * @returns The patient data or null if not found
+   */
+  async getPatientById(patientId: string): Promise<Patient | null> {
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('id', patientId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching patient:', error);
+        return null;
+      }
+      
+      return data as Patient;
+    } catch (error) {
+      console.error('Error fetching patient:', error);
+      return null;
+    }
+  },
+  
+  /**
    * Get all patients from the Supabase database
    * @returns An array of patients or empty array if there was an error
    */
@@ -94,6 +119,36 @@ export const PatientSupabaseService = {
     return () => {
       supabase.removeChannel(channel);
     };
+  },
+
+  /**
+   * Update a patient in the Supabase database
+   * @param patientId The ID of the patient to update
+   * @param patientData The updated patient data
+   * @returns The updated patient data or null if there was an error
+   */
+  async updatePatient(patientId: string, patientData: Partial<Patient>): Promise<Patient | null> {
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .update(patientData)
+        .eq('id', patientId)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating patient:', error);
+        toast.error(`Προέκυψε ένα σφάλμα: ${error.message}`);
+        return null;
+      }
+      
+      toast.success('Τα στοιχεία του ασθενή ενημερώθηκαν με επιτυχία');
+      return data as Patient;
+    } catch (error) {
+      console.error('Error updating patient:', error);
+      toast.error('Προέκυψε ένα σφάλμα κατά την ενημέρωση των στοιχείων.');
+      return null;
+    }
   }
 };
 
