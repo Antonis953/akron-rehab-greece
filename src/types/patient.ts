@@ -51,6 +51,19 @@ export interface Patient {
   phone: string | null;
   next_session_date: string | null;
   created_at: string | null;
+  // Extended fields for patient data (not in current DB schema)
+  affected_area?: string;
+  symptom_description?: string;
+  pain_level?: number;
+  difficulty_level?: number;
+  symptom_start_date?: string;
+  aggravating_factors?: string;
+  relieving_factors?: string;
+  functional_limitations?: string;
+  treatment_history?: string;
+  rehab_goals?: string;
+  activity_level?: string;
+  occupation?: string;
 }
 
 // Define rehabilitation program types
@@ -70,6 +83,7 @@ export interface RehabDay {
   date: string;
   exercises: RehabExercise[];
   completed: boolean;
+  hasPhysiotherapistSession?: boolean;
 }
 
 export interface RehabExercise {

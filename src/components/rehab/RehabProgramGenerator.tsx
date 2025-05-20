@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Accordion,
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Dumbbell, Info, Loader2 } from 'lucide-react';
+import { Check, Dumbbell, Info, Loader2, Calendar } from 'lucide-react';
 import RehabExerciseCard from './RehabExerciseCard';
 import {
   Dialog,
@@ -19,60 +19,83 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from 'sonner';
+import { RehabDay, RehabExercise } from '@/types/patient';
+import RehabProgramService, { GeneratedProgram } from '@/services/RehabProgramService';
 
 // Brand colors
 const PRIMARY_COLOR = "#1B677D";
 const SECONDARY_COLOR = "#90B7C2";
 
-// Mock data for days
-const createMockDay = (dayNumber: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() + dayNumber);
-  
-  // Create 2-4 exercises for each day
-  const numExercises = Math.floor(Math.random() * 3) + 2;
-  const exercises = [];
-  
-  const phases = ['isometric', 'concentric', 'eccentric', 'plyometric'];
-  const sources = ['Physiotutors', 'Prehab Guys', 'Adam Meakins', 'PhysioNetwork'];
-  
-  for (let i = 0; i < numExercises; i++) {
-    exercises.push({
-      id: `ex-${dayNumber}-${i}`,
-      name: `Άσκηση ${i + 1} - Ημέρα ${dayNumber}`,
-      sets: Math.floor(Math.random() * 3) + 1,
-      reps: Math.floor(Math.random() * 10) + 5,
-      phase: phases[Math.floor(Math.random() * phases.length)] as 'isometric' | 'concentric' | 'eccentric' | 'plyometric',
-      difficulty: Math.floor(Math.random() * 10) + 1,
-      source: sources[Math.floor(Math.random() * sources.length)],
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder video URL
-    });
-  }
-  
-  return {
-    id: `day-${dayNumber}`,
-    dayNumber,
-    date: date.toISOString().split('T')[0],
-    exercises,
-    completed: false,
-  };
-};
+interface RehabProgramGeneratorProps {
+  patientId: string;
+  startDate: string;
+  onProgramGenerated?: (program: GeneratedProgram) => void;
+}
 
-const mockDays = Array.from({ length: 7 }, (_, i) => createMockDay(i));
-
-const RehabProgramGenerator = () => {
-  const [days, setDays] = useState(mockDays);
+const RehabProgramGenerator: React.FC<RehabProgramGeneratorProps> = ({ 
+  patientId, 
+  startDate,
+  onProgramGenerated
+}) => {
+  const [days, setDays] = useState<RehabDay[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [programSummary, setProgramSummary] = useState<string>('');
+  const [weeklyGoals, setWeeklyGoals] = useState<string[]>([]);
 
-  const handleGenerateProgram = () => {
+  const handleGenerateProgram = async () => {
+    if (!patientId || !startDate) {
+      toast.error('Δεν έχουν οριστεί όλες οι απαραίτητες πληροφορίες');
+      return;
+    }
+    
     setIsGenerating(true);
     
-    // Simulate API call to generate program
-    setTimeout(() => {
+    try {
+      // Generate program using our service
+      const program = await RehabProgramService.generateProgram(patientId, startDate);
+      
+      // Transform the generated program to match our UI structure
+      const transformedDays: RehabDay[] = program.days.map(day => {
+        const transformedExercises: RehabExercise[] = day.exercises.map((exercise, index) => ({
+          id: `ex-${day.dayNumber}-${index}`,
+          name: exercise.name,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          phase: exercise.phase,
+          difficulty: exercise.difficulty,
+          source: exercise.source,
+          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
+        }));
+        
+        return {
+          id: `day-${day.dayNumber}`,
+          dayNumber: day.dayNumber,
+          date: day.date,
+          exercises: transformedExercises,
+          completed: false,
+          hasPhysiotherapistSession: day.hasPhysiotherapistSession,
+        };
+      });
+      
+      // Update state
+      setDays(transformedDays);
+      setProgramSummary(program.summary);
+      setWeeklyGoals(program.weeklyGoals);
+      
+      // Notify parent component
+      if (onProgramGenerated) {
+        onProgramGenerated(program);
+      }
+      
+      toast.success('Το πρόγραμμα δημιουργήθηκε με επιτυχία!');
+    } catch (error) {
+      console.error('Error generating program:', error);
+      toast.error('Σφάλμα κατά τη δημιουργία του προγράμματος');
+    } finally {
       setIsGenerating(false);
-      // In a real implementation, this would update with data from the AI
-    }, 2000);
+    }
   };
   
   const markDayCompleted = (dayId: string) => {
@@ -83,6 +106,13 @@ const RehabProgramGenerator = () => {
     );
   };
 
+  // If patientId or startDate changes, we should clear the current program
+  useEffect(() => {
+    setDays([]);
+    setProgramSummary('');
+    setWeeklyGoals([]);
+  }, [patientId, startDate]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -91,7 +121,7 @@ const RehabProgramGenerator = () => {
           onClick={handleGenerateProgram}
           style={{ backgroundColor: SECONDARY_COLOR }}
           className="text-white hover:bg-opacity-90 w-full sm:w-auto"
-          disabled={isGenerating}
+          disabled={isGenerating || !patientId || !startDate}
         >
           {isGenerating ? (
             <>
@@ -104,79 +134,121 @@ const RehabProgramGenerator = () => {
         </Button>
       </div>
       
+      {programSummary && (
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="font-semibold mb-2" style={{ color: PRIMARY_COLOR }}>Σύνοψη</h3>
+          <p className="text-sm text-gray-700">{programSummary}</p>
+          
+          {weeklyGoals.length > 0 && (
+            <div className="mt-3">
+              <h4 className="font-semibold mb-1 text-sm" style={{ color: PRIMARY_COLOR }}>Εβδομαδιαίοι Στόχοι</h4>
+              <ul className="list-disc list-inside text-sm text-gray-700">
+                {weeklyGoals.map((goal, index) => (
+                  <li key={index}>{goal}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+      
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex justify-between items-center" style={{ color: PRIMARY_COLOR }}>
-            <span>Πρόγραμμα Ασκήσεων</span>
-            <Badge 
-              variant="ai" 
-              className="ml-2 text-xs cursor-help"
-              withTooltip={true}
-              tooltipText="Το περιεχόμενο παράγεται από AI με βάση τις κλινικές πληροφορίες του ασθενή"
-            >
-              AI-Generated
-            </Badge>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-lg" style={{ color: PRIMARY_COLOR }}>
+            Πρόγραμμα Ασκήσεων
           </CardTitle>
+          <Badge 
+            variant="ai" 
+            className="text-xs cursor-help"
+            withTooltip={true}
+            tooltipText="Το περιεχόμενο παράγεται από AI με βάση τις κλινικές πληροφορίες του ασθενή"
+          >
+            AI-Generated
+          </Badge>
         </CardHeader>
         <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            {days.map((day, index) => (
-              <AccordionItem key={day.id} value={day.id} className={day.completed ? "bg-green-50" : ""}>
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex justify-between items-center w-full pr-4">
-                    <div className="flex items-center">
-                      <Badge 
-                        variant="outline" 
-                        className="mr-3 flex items-center gap-1"
-                        style={{ 
-                          borderColor: day.completed ? '#22c55e' : SECONDARY_COLOR,
-                          color: day.completed ? '#22c55e' : PRIMARY_COLOR 
-                        }}
-                      >
-                        {day.completed ? 
-                          <Check className="h-3 w-3" /> : 
-                          <Dumbbell className="h-3 w-3" />
-                        }
-                        Ημέρα {index + 1}
-                      </Badge>
-                      <span className="text-sm">
-                        {new Date(day.date).toLocaleDateString('el-GR', { 
-                          weekday: 'long', 
-                          day: '2-digit', 
-                          month: 'long' 
-                        })}
-                      </span>
-                    </div>
-                    {day.completed && (
-                      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-                        Ολοκληρώθηκε
-                      </Badge>
-                    )}
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4 py-2">
-                    {day.exercises.map(exercise => (
-                      <RehabExerciseCard key={exercise.id} exercise={exercise} />
-                    ))}
-                    
-                    {!day.completed && (
-                      <div className="flex justify-end mt-4">
-                        <Button 
-                          onClick={() => markDayCompleted(day.id)}
-                          className="text-white"
-                          style={{ backgroundColor: '#22c55e' }}
+          {days.length > 0 ? (
+            <Accordion type="single" collapsible className="w-full">
+              {days.map((day) => (
+                <AccordionItem key={day.id} value={day.id} className={day.completed ? "bg-green-50" : ""}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex justify-between items-center w-full pr-4">
+                      <div className="flex items-center">
+                        <Badge 
+                          variant="outline" 
+                          className="mr-3 flex items-center gap-1"
+                          style={{ 
+                            borderColor: day.completed ? '#22c55e' : SECONDARY_COLOR,
+                            color: day.completed ? '#22c55e' : PRIMARY_COLOR 
+                          }}
                         >
-                          <Check className="mr-2 h-4 w-4" />
-                          Ολοκληρώθηκε
-                        </Button>
+                          {day.completed ? 
+                            <Check className="h-3 w-3" /> : 
+                            <Dumbbell className="h-3 w-3" />
+                          }
+                          Ημέρα {day.dayNumber}
+                        </Badge>
+                        <span className="text-sm">
+                          {new Date(day.date).toLocaleDateString('el-GR', { 
+                            weekday: 'long', 
+                            day: '2-digit', 
+                            month: 'long' 
+                          })}
+                        </span>
+                        
+                        {day.hasPhysiotherapistSession && (
+                          <Badge className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Συνεδρία
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                      {day.completed && (
+                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                          Ολοκληρώθηκε
+                        </Badge>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 py-2">
+                      {day.exercises.map(exercise => (
+                        <RehabExerciseCard key={exercise.id} exercise={exercise} />
+                      ))}
+                      
+                      {!day.completed && (
+                        <div className="flex justify-end mt-4">
+                          <Button 
+                            onClick={() => markDayCompleted(day.id)}
+                            className="text-white"
+                            style={{ backgroundColor: '#22c55e' }}
+                          >
+                            <Check className="mr-2 h-4 w-4" />
+                            Ολοκληρώθηκε
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ) : (
+            <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                <div className="rounded-full bg-gray-100 p-3">
+                  <Dumbbell className="h-8 w-8 text-gray-400" />
+                </div>
+              </div>
+              <h3 className="text-lg font-medium mb-2" style={{ color: PRIMARY_COLOR }}>
+                Δεν υπάρχει πρόγραμμα ασκήσεων
+              </h3>
+              <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
+                Πατήστε το κουμπί "Δημιουργία Εβδομαδιαίου Προγράμματος" για να δημιουργήσετε ένα
+                εξατομικευμένο πρόγραμμα για τον ασθενή με βάση τα στοιχεία του.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -184,8 +256,8 @@ const RehabProgramGenerator = () => {
         <div className="text-sm text-blue-700 text-center">
           <div className="flex flex-col items-center gap-2">
             <p>
-              <strong>Σημείωση:</strong> Το περιεχόμενο θα παράγεται δυναμικά από εξωτερική AI λογική. 
-              Θα ενεργοποιηθεί μετά την τεχνική σύνδεση με OpenAI και πηγές όπως Physiotutors, Prehab Guys και Adam Meakins.
+              <strong>Σημείωση:</strong> Το περιεχόμενο παράγεται δυναμικά από εξωτερική AI λογική. 
+              Θα ενεργοποιηθεί πλήρως μετά την τεχνική σύνδεση με OpenAI και πηγές όπως Physiotutors, Prehab Guys και Adam Meakins.
             </p>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>

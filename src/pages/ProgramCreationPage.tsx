@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import PatientSupabaseService from '@/services/PatientSupabaseService';
 import { Patient } from '@/types/patient';
 import RehabProgramGenerator from '@/components/rehab/RehabProgramGenerator';
+import RehabProgramService, { GeneratedProgram } from '@/services/RehabProgramService';
 
 // Brand colors
 const PRIMARY_COLOR = "#1B677D";
@@ -24,8 +25,10 @@ const ProgramCreationPage = () => {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [startDate, setStartDate] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [generatedProgram, setGeneratedProgram] = useState<GeneratedProgram | null>(null);
 
   // Get today's date in YYYY-MM-DD format for min date attribute
   const today = new Date().toISOString().split('T')[0];
@@ -60,21 +63,35 @@ const ProgramCreationPage = () => {
     fetchPatient();
   }, [patientId, navigate, today]);
 
-  const handleCreateProgram = () => {
-    // This would normally send data to Supabase
-    toast.success('Το πρόγραμμα δημιουργήθηκε με επιτυχία!');
-    
-    // Placeholder for creation logic
-    console.log('Creating program with data:', {
-      patientId,
-      startDate,
-      notes
-    });
-    
-    // Navigate back to patient page
-    if (patientId) {
-      navigate(`/patients/${patientId}`);
+  const handleCreateProgram = async () => {
+    if (!patientId || !startDate) {
+      toast.error('Συμπληρώστε όλα τα υποχρεωτικά πεδία');
+      return;
     }
+    
+    if (!generatedProgram) {
+      toast.error('Παρακαλώ δημιουργήστε πρώτα ένα πρόγραμμα ασκήσεων');
+      return;
+    }
+    
+    setIsSaving(true);
+    
+    try {
+      await RehabProgramService.saveProgram(patientId, startDate, notes, generatedProgram);
+      toast.success('Το πρόγραμμα δημιουργήθηκε με επιτυχία!');
+      
+      // Navigate back to patient page
+      navigate(`/patients/${patientId}`);
+    } catch (error) {
+      console.error('Error saving program:', error);
+      toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleProgramGenerated = (program: GeneratedProgram) => {
+    setGeneratedProgram(program);
   };
 
   if (isLoading) {
@@ -125,11 +142,21 @@ const ProgramCreationPage = () => {
           </div>
           
           <Button 
-            onClick={handleCreateProgram} 
+            onClick={handleCreateProgram}
             style={{ backgroundColor: PRIMARY_COLOR }}
             className="text-white hover:bg-opacity-90"
+            disabled={isSaving || !startDate || !generatedProgram}
           >
-            <Save className="h-4 w-4 mr-2" /> Αποθήκευση Προγράμματος
+            {isSaving ? (
+              <>
+                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Αποθήκευση...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" /> Αποθήκευση Προγράμματος
+              </>
+            )}
           </Button>
         </div>
         
@@ -138,7 +165,7 @@ const ProgramCreationPage = () => {
         <Alert className="bg-blue-50 border-blue-200">
           <Info className="h-4 w-4 text-blue-700" />
           <AlertDescription className="text-blue-700">
-            Το περιεχόμενο παράγεται δυναμικά από εξωτερική AI λογική. Θα ενεργοποιηθεί μετά την τεχνική σύνδεση με OpenAI και εξειδικευμένες πηγές φυσικοθεραπείας.
+            Το περιεχόμενο παράγεται δυναμικά από εξωτερική AI λογική. Θα ενεργοποιηθεί πλήρως μετά την τεχνική σύνδεση με OpenAI και εξειδικευμένες πηγές φυσικοθεραπείας.
           </AlertDescription>
         </Alert>
 
@@ -176,7 +203,11 @@ const ProgramCreationPage = () => {
           </Card>
 
           <div className="col-span-1 md:col-span-2">
-            <RehabProgramGenerator />
+            <RehabProgramGenerator 
+              patientId={patientId} 
+              startDate={startDate} 
+              onProgramGenerated={handleProgramGenerated}
+            />
           </div>
         </div>
       </div>
