@@ -27,6 +27,9 @@ const ProgramCreationPage = () => {
   const [startDate, setStartDate] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
 
+  // Get today's date in YYYY-MM-DD format for min date attribute
+  const today = new Date().toISOString().split('T')[0];
+
   useEffect(() => {
     const fetchPatient = async () => {
       if (!patientId) {
@@ -41,7 +44,7 @@ const ProgramCreationPage = () => {
         if (patientData) {
           setPatient(patientData);
           // Default start date to today
-          setStartDate(new Date().toISOString().split('T')[0]);
+          setStartDate(today);
         } else {
           toast.error('Ο ασθενής δεν βρέθηκε');
           navigate('/dashboard/physiotherapist');
@@ -55,7 +58,7 @@ const ProgramCreationPage = () => {
     };
 
     fetchPatient();
-  }, [patientId, navigate]);
+  }, [patientId, navigate, today]);
 
   const handleCreateProgram = () => {
     // This would normally send data to Supabase
@@ -153,6 +156,7 @@ const ProgramCreationPage = () => {
                     id="start-date"
                     type="date"
                     value={startDate}
+                    min={today}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
