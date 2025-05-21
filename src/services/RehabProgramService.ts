@@ -1,6 +1,7 @@
 
 import { Patient } from '@/types/patient';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 // Example exercise categories based on body regions
 const exercisesByRegion: Record<string, string[]> = {
@@ -55,21 +56,42 @@ export interface GeneratedProgram {
 
 // Function to sanitize exercise data before saving to database
 const sanitizeExercise = (exercise: any) => {
+  // Define valid phases and ensure they match database expectations exactly
+  const validPhases = ['isometric', 'concentric', 'eccentric', 'plyometric'];
+  
+  // Get the phase from the exercise, convert to lowercase for case-insensitive comparison
+  const phaseInput = exercise.phase ? String(exercise.phase).toLowerCase() : '';
+  
+  // Validate if the phase is among valid phases, default to 'isometric' if not
+  const phase = validPhases.includes(phaseInput) ? phaseInput : 'isometric';
+  
   return {
     exercise_name: exercise.name || 'Γενική άσκηση',
-    sets: typeof exercise.sets === 'number' && exercise.sets > 0 ? exercise.sets : 1,
-    reps: typeof exercise.reps === 'number' && exercise.reps > 0 ? exercise.reps : 10,
-    phase: ['isometric', 'concentric', 'eccentric', 'plyometric'].includes(exercise.phase) 
-      ? exercise.phase 
-      : 'isometric',
+    sets: typeof exercise.sets === 'number' && exercise.sets >= 1 ? exercise.sets : 2,
+    reps: typeof exercise.reps === 'number' && exercise.reps >= 1 ? exercise.reps : 10,
+    phase: phase,
     difficulty_level: typeof exercise.difficulty === 'number' && exercise.difficulty >= 1 && exercise.difficulty <= 10 
       ? exercise.difficulty 
       : 1,
     pain_level: typeof exercise.painLevel === 'number' && exercise.painLevel >= 1 && exercise.painLevel <= 10 
       ? exercise.painLevel 
       : 1,
-    video_link: exercise.video_link || 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    video_link: exercise.video_link || 'https://youtube.com/placeholder'
   };
+};
+
+// Helper function to validate an exercise object
+const isValidExercise = (exercise: any): boolean => {
+  return (
+    exercise && 
+    typeof exercise.exercise_name === 'string' && 
+    exercise.exercise_name.length > 0 && 
+    typeof exercise.sets === 'number' && 
+    typeof exercise.reps === 'number' &&
+    typeof exercise.phase === 'string' &&
+    typeof exercise.difficulty_level === 'number' && 
+    typeof exercise.pain_level === 'number'
+  );
 };
 
 export const RehabProgramService = {
@@ -150,11 +172,6 @@ export const RehabProgramService = {
             source: sources[Math.floor(Math.random() * sources.length)]
           };
 
-          // Ensure default values are set
-          if (!exercise.painLevel) exercise.painLevel = 1;
-          if (!exercise.difficulty) exercise.difficulty = 1;
-          if (!exercise.phase) exercise.phase = 'isometric';
-          
           return exercise;
         });
         
@@ -217,21 +234,42 @@ export const RehabProgramService = {
         })
       );
       
+      // Console log for debugging
       console.log('Inserting exercises:', exercisesToInsert);
       
-      // Insert exercises
-      const { error: exercisesError } = await supabase
-        .from('program_exercises')
-        .insert(exercisesToInsert);
-        
-      if (exercisesError) {
-        console.error('Error inserting exercises:', exercisesError);
-        throw exercisesError;
+      // Validate all exercises before insertion
+      const allExercisesValid = exercisesToInsert.every(ex => isValidExercise(ex));
+      
+      if (!allExercisesValid) {
+        console.error('Some exercises are invalid:', exercisesToInsert);
+        toast.error("Αποτυχία αποθήκευσης προγράμματος. Ελέγξτε τα δεδομένα.");
+        throw new Error("Invalid exercise data detected");
       }
       
-      return programData;
+      // Insert exercises
+      try {
+        const { error: exercisesError } = await supabase
+          .from('program_exercises')
+          .insert(exercisesToInsert);
+          
+        if (exercisesError) {
+          console.error('Error inserting exercises:', exercisesError);
+          toast.error("Αποτυχία αποθήκευσης προγράμματος. Ελέγξτε τα δεδομένα.");
+          throw exercisesError;
+        }
+        
+        // Show success toast
+        toast.success("Το πρόγραμμα αποθηκεύτηκε με επιτυχία.");
+        
+        return programData;
+      } catch (insertError) {
+        console.error('Error during exercise insertion:', insertError);
+        toast.error("Αποτυχία αποθήκευσης προγράμματος. Ελέγξτε τα δεδομένα.");
+        throw insertError;
+      }
     } catch (error) {
       console.error('Error saving program:', error);
+      toast.error("Αποτυχία αποθήκευσης προγράμματος. Ελέγξτε τα δεδομένα.");
       throw error;
     }
   }
