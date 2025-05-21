@@ -53,6 +53,25 @@ export interface GeneratedProgram {
   }[];
 }
 
+// Function to sanitize exercise data before saving to database
+const sanitizeExercise = (exercise: any) => {
+  return {
+    exercise_name: exercise.name || 'Γενική άσκηση',
+    sets: typeof exercise.sets === 'number' && exercise.sets > 0 ? exercise.sets : 1,
+    reps: typeof exercise.reps === 'number' && exercise.reps > 0 ? exercise.reps : 10,
+    phase: ['isometric', 'concentric', 'eccentric', 'plyometric'].includes(exercise.phase) 
+      ? exercise.phase 
+      : 'isometric',
+    difficulty_level: typeof exercise.difficulty === 'number' && exercise.difficulty >= 1 && exercise.difficulty <= 10 
+      ? exercise.difficulty 
+      : 1,
+    pain_level: typeof exercise.painLevel === 'number' && exercise.painLevel >= 1 && exercise.painLevel <= 10 
+      ? exercise.painLevel 
+      : 1,
+    video_link: exercise.video_link || 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  };
+};
+
 export const RehabProgramService = {
   /**
    * Generate a personalized rehabilitation program based on patient data
@@ -182,25 +201,33 @@ export const RehabProgramService = {
         
       if (programError) throw programError;
       
-      // Insert exercises
+      // Prepare exercise data for insertion with full validation
       const exercisesToInsert = program.days.flatMap(day => 
-        day.exercises.map(exercise => ({
-          program_id: programData.id,
-          exercise_name: exercise.name,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          phase: exercise.phase,
-          difficulty_level: exercise.difficulty,
-          pain_level: exercise.painLevel || 1, // Ensure default values
-          video_link: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // Placeholder
-        }))
+        day.exercises.map(exercise => {
+          // Apply comprehensive sanitization to each exercise
+          const sanitizedExercise = sanitizeExercise({
+            ...exercise,
+            program_id: programData.id,
+          });
+          
+          return {
+            program_id: programData.id,
+            ...sanitizedExercise
+          };
+        })
       );
       
+      console.log('Inserting exercises:', exercisesToInsert);
+      
+      // Insert exercises
       const { error: exercisesError } = await supabase
         .from('program_exercises')
         .insert(exercisesToInsert);
         
-      if (exercisesError) throw exercisesError;
+      if (exercisesError) {
+        console.error('Error inserting exercises:', exercisesError);
+        throw exercisesError;
+      }
       
       return programData;
     } catch (error) {
