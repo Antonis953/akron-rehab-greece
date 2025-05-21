@@ -58,16 +58,23 @@ const RehabProgramGenerator: React.FC<RehabProgramGeneratorProps> = ({
       
       // Transform the generated program to match our UI structure
       const transformedDays: RehabDay[] = program.days.map(day => {
-        const transformedExercises: RehabExercise[] = day.exercises.map((exercise, index) => ({
-          id: `ex-${day.dayNumber}-${index}`,
-          name: exercise.name,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          phase: exercise.phase,
-          difficulty: exercise.difficulty,
-          source: exercise.source,
-          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
-        }));
+        const transformedExercises: RehabExercise[] = day.exercises.map((exercise, index) => {
+          // Ensure default values are set for each exercise
+          if (!exercise.painLevel) exercise.painLevel = 1;
+          if (!exercise.difficulty) exercise.difficulty = 1;
+          if (!exercise.phase) exercise.phase = 'isometric';
+          
+          return {
+            id: `ex-${day.dayNumber}-${index}`,
+            name: exercise.name,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            phase: exercise.phase,
+            difficulty: exercise.difficulty,
+            source: exercise.source,
+            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder
+          };
+        });
         
         return {
           id: `day-${day.dayNumber}`,

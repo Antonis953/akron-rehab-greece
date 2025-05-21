@@ -121,7 +121,7 @@ export const RehabProgramService = {
           const painFactor = Math.max(1 - (painLevel / 10), 0.3); // Higher pain means lower intensity
           const adjustedDifficulty = Math.max(2, Math.min(10, Math.round(difficultyLevel * dayFactor * painFactor)));
           
-          return {
+          const exercise = {
             name: availableExercises[exerciseIndex],
             sets: Math.max(1, Math.min(4, Math.round(3 * dayFactor * painFactor))),
             reps: Math.max(5, Math.min(15, Math.round(10 * dayFactor * painFactor))),
@@ -130,6 +130,13 @@ export const RehabProgramService = {
             painLevel: Math.max(1, Math.min(painLevel - 1, 8)), // Target pain level during exercise
             source: sources[Math.floor(Math.random() * sources.length)]
           };
+
+          // Ensure default values are set
+          if (!exercise.painLevel) exercise.painLevel = 1;
+          if (!exercise.difficulty) exercise.difficulty = 1;
+          if (!exercise.phase) exercise.phase = 'isometric';
+          
+          return exercise;
         });
         
         return {
@@ -184,7 +191,7 @@ export const RehabProgramService = {
           reps: exercise.reps,
           phase: exercise.phase,
           difficulty_level: exercise.difficulty,
-          pain_level: exercise.painLevel,
+          pain_level: exercise.painLevel || 1, // Ensure default values
           video_link: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // Placeholder
         }))
       );
