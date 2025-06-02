@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -9,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { CalendarPlus, ArrowLeft, User } from 'lucide-react';
 import { toast } from 'sonner';
 import PatientSupabaseService from '@/services/PatientSupabaseService';
+import { ProgramService } from '@/services/ProgramService';
 import { Patient } from '@/types/patient';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
@@ -53,8 +53,28 @@ const PatientDetailPage = () => {
     fetchPatient();
   }, [patientId, navigate]);
 
-  const handleCreateProgram = () => {
-    if (patientId) {
+  const handleCreateProgram = async () => {
+    if (!patientId) return;
+    
+    console.log(`Έλεγχος για υπάρχον πρόγραμμα για ασθενή με ID: ${patientId}`);
+    
+    try {
+      // Check if a program already exists for this patient
+      const existingProgram = await ProgramService.getPatientProgram(patientId);
+      
+      if (existingProgram) {
+        console.log('Βρέθηκε υπάρχον πρόγραμμα, μετάβαση σε αυτό:', existingProgram);
+        // Navigate to existing program view (this route would need to be implemented)
+        navigate(`/programs/${existingProgram.id}`);
+        toast.success('Μετάβαση στο υπάρχον πρόγραμμα του ασθενή');
+      } else {
+        console.log('Δεν βρέθηκε πρόγραμμα, δημιουργία νέου');
+        // Navigate to program creation
+        navigate(`/programs/new/${patientId}`);
+      }
+    } catch (error) {
+      console.error('Σφάλμα κατά τον έλεγχο προγράμματος:', error);
+      // Fallback to program creation if there's an error
       navigate(`/programs/new/${patientId}`);
     }
   };

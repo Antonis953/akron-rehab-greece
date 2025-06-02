@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { BRAND_COLORS } from '@/lib/utils';
 import { Loader2, Eye, CalendarPlus, User } from 'lucide-react';
 import PatientSupabaseService from '@/services/PatientSupabaseService';
+import { ProgramService } from '@/services/ProgramService';
 import { Patient } from '@/types/patient';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const PatientList = () => {
   const navigate = useNavigate();
@@ -35,17 +36,14 @@ const PatientList = () => {
     }
   };
 
-  // Initial fetch on component mount and setup real-time subscription
   useEffect(() => {
     fetchPatients();
     
-    // Set up real-time subscription using our service
     const unsubscribe = PatientSupabaseService.subscribeToPatients(() => {
       console.log('Ενημέρωση λίστας ασθενών μέσω real-time...');
       fetchPatients();
     });
     
-    // Clean up subscription on unmount
     return () => {
       unsubscribe();
     };
@@ -56,12 +54,30 @@ const PatientList = () => {
     navigate(`/patients/${patientId}`);
   };
 
-  const createProgram = (patientId: string) => {
-    console.log(`Δημιουργία προγράμματος για ασθενή με ID: ${patientId}`);
-    navigate(`/programs/new/${patientId}`);
+  const createOrViewProgram = async (patientId: string) => {
+    console.log(`Έλεγχος για υπάρχον πρόγραμμα για ασθενή με ID: ${patientId}`);
+    
+    try {
+      // Check if a program already exists for this patient
+      const existingProgram = await ProgramService.getPatientProgram(patientId);
+      
+      if (existingProgram) {
+        console.log('Βρέθηκε υπάρχον πρόγραμμα, μετάβαση στο:', existingProgram);
+        // Navigate to existing program view (this route would need to be implemented)
+        navigate(`/programs/${existingProgram.id}`);
+        toast.success('Μετάβαση στο υπάρχον πρόγραμμα του ασθενή');
+      } else {
+        console.log('Δεν βρέθηκε πρόγραμμα, δημιουργία νέου');
+        // Navigate to program creation
+        navigate(`/programs/new/${patientId}`);
+      }
+    } catch (error) {
+      console.error('Σφάλμα κατά τον έλεγχο προγράμματος:', error);
+      // Fallback to program creation if there's an error
+      navigate(`/programs/new/${patientId}`);
+    }
   };
 
-  // Generate initials from patient name
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -71,7 +87,6 @@ const PatientList = () => {
       .slice(0, 2);
   };
 
-  // Format date in Greek
   const formatDateInGreek = (dateString: string | null) => {
     if (!dateString) return 'Μη ορισμένη';
     try {
@@ -82,15 +97,12 @@ const PatientList = () => {
     }
   };
 
-  // Get program status for a patient (mock data - will be replaced with real data later)
   const getPatientProgramStatus = (patientId: string) => {
-    // This would be replaced with actual data from the database
     const statuses = ['active', 'pending', 'completed'];
     const randomIndex = Math.floor(Math.random() * statuses.length);
     return statuses[randomIndex] as 'active' | 'pending' | 'completed';
   };
 
-  // Render status badge
   const renderStatusBadge = (status: 'active' | 'pending' | 'completed') => {
     if (status === 'active') {
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Σε εξέλιξη</Badge>;
@@ -101,7 +113,6 @@ const PatientList = () => {
     }
   };
 
-  // Render error state
   if (error) {
     return (
       <div className="bg-white rounded-md shadow p-8 text-center">
@@ -124,7 +135,6 @@ const PatientList = () => {
     );
   }
 
-  // Render loading state
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
@@ -134,7 +144,6 @@ const PatientList = () => {
     );
   }
 
-  // Render empty state
   if (patients.length === 0) {
     return (
       <div className="bg-white rounded-md shadow p-8 text-center">
@@ -156,7 +165,6 @@ const PatientList = () => {
     );
   }
 
-  // Render patient list
   return (
     <div className="bg-white rounded-md shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -171,7 +179,7 @@ const PatientList = () => {
           </TableHeader>
           <TableBody>
             {patients.map((patient) => {
-              const isNew = new Date(patient.created_at || '').getTime() > Date.now() - 86400000; // 24 hours
+              const isNew = new Date(patient.created_at || '').getTime() > Date.now() - 86400000;
               const initials = getInitials(patient.full_name);
               const programStatus = getPatientProgramStatus(patient.id);
               
@@ -227,10 +235,10 @@ const PatientList = () => {
                         size="sm"
                         className="flex items-center gap-1 text-xs text-white"
                         style={{ backgroundColor: BRAND_COLORS.secondary }}
-                        onClick={() => createProgram(patient.id)}
+                        onClick={() => createOrViewProgram(patient.id)}
                       >
                         <CalendarPlus className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Δημιουργία Προγράμματος</span>
+                        <span className="hidden sm:inline">Πρόγραμμα</span>
                       </Button>
                     </div>
                   </TableCell>
