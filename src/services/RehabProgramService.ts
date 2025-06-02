@@ -1,7 +1,7 @@
-
 import { Patient } from '@/types/patient';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { TablesInsert } from '@/lib/supabase/types';
 
 // Example exercise categories based on body regions
 const exercisesByRegion: Record<string, string[]> = {
@@ -205,21 +205,27 @@ export const RehabProgramService = {
       end.setDate(start.getDate() + 6);
       
       // Insert program
+      const programInsert: TablesInsert<'programs'> = {
+        patient_id: patientId,
+        program_start_date: startDate,
+        program_end_date: end.toISOString().split('T')[0],
+        notes
+      };
+      
       const { data: programData, error: programError } = await supabase
         .from('programs')
-        .insert({
-          patient_id: patientId,
-          program_start_date: startDate,
-          program_end_date: end.toISOString().split('T')[0],
-          notes
-        })
+        .insert(programInsert)
         .select()
         .single();
         
       if (programError) throw programError;
       
+      if (!programData) {
+        throw new Error('Program creation failed - no data returned');
+      }
+      
       // Prepare exercise data for insertion with full validation
-      const exercisesToInsert = program.days.flatMap(day => 
+      const exercisesToInsert: TablesInsert<'program_exercises'>[] = program.days.flatMap(day => 
         day.exercises.map(exercise => {
           // Apply comprehensive sanitization to each exercise
           const sanitizedExercise = sanitizeExercise({

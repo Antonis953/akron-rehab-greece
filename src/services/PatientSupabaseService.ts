@@ -1,10 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PatientFormData, Patient } from '@/types/patient';
-import { Database } from '@/integrations/supabase/types';
+import { TablesInsert } from '@/lib/supabase/types';
 
-type PatientInsert = Database['public']['Tables']['patients']['Insert'];
+type PatientInsert = TablesInsert<'patients'>;
 
 export const PatientSupabaseService = {
   /**
@@ -120,7 +119,7 @@ export const PatientSupabaseService = {
       supabase.removeChannel(channel);
     };
   },
-
+  
   /**
    * Update a patient in the Supabase database
    * @param patientId The ID of the patient to update

@@ -35,7 +35,7 @@ export const ProgramService = {
       }
 
       console.log('Found existing program for patient:', data);
-      return data;
+      return data as Program;
     } catch (error) {
       console.error('Error in getPatientProgram:', error);
       return null;
@@ -58,7 +58,7 @@ export const ProgramService = {
         return [];
       }
 
-      return data || [];
+      return (data || []) as Program[];
     } catch (error) {
       console.error('Error in getPatientPrograms:', error);
       return [];
