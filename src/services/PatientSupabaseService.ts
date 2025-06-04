@@ -111,7 +111,7 @@ export const PatientSupabaseService = {
    * Get all patients from the Supabase database
    * @returns An array of patients or empty array if there was an error
    */
-  async getAllPatients(): Promise<Patient[]> => {
+  async getAllPatients(): Promise<Patient[]> {
     try {
       const { data, error } = await supabase
         .from('patients')
