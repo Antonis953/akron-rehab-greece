@@ -1,9 +1,8 @@
+
 import { Patient } from '@/types/patient';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
-  TablesInsert, 
-  ExtendedPatient, 
   ProgramInsert, 
   ProgramExerciseInsert,
   ExercisePhase 
@@ -185,7 +184,7 @@ export const RehabProgramService = {
         affectedArea !== 'general' 
           ? `Εστιάζει στην περιοχή: ${affectedArea} με επίπεδο πόνου ${painLevel}/10.` 
           : 'Εστιάζει σε γενική ενδυνάμωση και κινητικότητα.'
-      } Σχεδιασμένο με βάση την τρέχουσα κατάσταση και τους προσωπικούς στόχους του ασθενή.';
+      } Σχεδιασμένο με βάση την τρέχουσα κατάσταση και τους προσωπικούς στόχους του ασθενή.`;
       
       // Generate weekly goals
       const weeklyGoals = [
@@ -211,7 +210,7 @@ export const RehabProgramService = {
         const numExercises = Math.floor(Math.random() * 2) + 2; // 2-3 exercises
         const exercises = Array.from({ length: numExercises }, (_, j) => {
           const exerciseIndex = (i + j) % availableExercises.length;
-          const phases: ('isometric' | 'concentric' | 'eccentric' | 'plyometric')[] = ['isometric', 'concentric', 'eccentric', 'plyometric'];
+          const phases: ExercisePhase[] = ['isometric', 'concentric', 'eccentric', 'plyometric'];
           const sources = ['Physiotutors', 'Prehab Guys', 'Adam Meakins'];
           
           // Adjust difficulty based on session day and pain level
@@ -393,7 +392,7 @@ export const RehabProgramService = {
           console.error('Exception during program cleanup:', cleanupError);
         }
         
-        toast.error(`Αποτυχία αποθήκευσης προγράμματος: ${exercisesError.message}`);
+        toast.error(`Σφάλμα κατά την αποθήκευση προγράμματος: ${exercisesError.message}`);
         throw new Error(`Αποτυχία αποθήκευσης ασκήσεων: ${exercisesError.message}`);
       }
       
@@ -406,7 +405,7 @@ export const RehabProgramService = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Άγνωστο σφάλμα αποθήκευσης';
       console.error('Error in saveProgram:', error);
-      toast.error(`Αποτυχία αποθήκευσης προγράμματος: ${errorMessage}`);
+      toast.error(`Σφάλμα κατά την αποθήκευση προγράμματος: ${errorMessage}`);
       throw error;
     }
   }
