@@ -1,8 +1,13 @@
-
 import { Patient } from '@/types/patient';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TablesInsert } from '@/lib/supabase/types';
+import { 
+  TablesInsert, 
+  ExtendedPatient, 
+  ProgramInsert, 
+  ProgramExerciseInsert,
+  ExercisePhase 
+} from '@/lib/supabase/generated-types';
 
 // Example exercise categories based on body regions
 const exercisesByRegion: Record<string, string[]> = {
@@ -46,7 +51,7 @@ export interface GeneratedProgram {
       name: string;
       sets: number;
       reps: number;
-      phase: 'isometric' | 'concentric' | 'eccentric' | 'plyometric';
+      phase: ExercisePhase;
       difficulty: number;
       painLevel: number;
       source: string;
@@ -56,11 +61,10 @@ export interface GeneratedProgram {
 }
 
 // Valid phase values as per Supabase constraint
-const VALID_PHASES = ['isometric', 'concentric', 'eccentric', 'plyometric'] as const;
-type ValidPhase = typeof VALID_PHASES[number];
+const VALID_PHASES: ExercisePhase[] = ['isometric', 'concentric', 'eccentric', 'plyometric'];
 
 // Sanitization function for exercise data
-const sanitizeExercise = (exercise: any, programId: string): TablesInsert<'program_exercises'> => {
+const sanitizeExercise = (exercise: any, programId: string): ProgramExerciseInsert => {
   console.log('Sanitizing exercise:', exercise);
   
   // Validate and sanitize exercise_name
@@ -88,9 +92,9 @@ const sanitizeExercise = (exercise: any, programId: string): TablesInsert<'progr
   }
 
   // Validate and sanitize phase - must be exact match from valid phases
-  let phase: ValidPhase = 'isometric'; // default
+  let phase: ExercisePhase = 'isometric'; // default
   if (exercise?.phase && typeof exercise.phase === 'string') {
-    const normalizedPhase = exercise.phase.toLowerCase().trim() as ValidPhase;
+    const normalizedPhase = exercise.phase.toLowerCase().trim() as ExercisePhase;
     if (VALID_PHASES.includes(normalizedPhase)) {
       phase = normalizedPhase;
     }
@@ -125,7 +129,7 @@ const sanitizeExercise = (exercise: any, programId: string): TablesInsert<'progr
     }
   }
 
-  const sanitizedExercise: TablesInsert<'program_exercises'> = {
+  const sanitizedExercise: ProgramExerciseInsert = {
     program_id: programId,
     exercise_name: sanitizedName,
     sets: sets,
@@ -181,7 +185,7 @@ export const RehabProgramService = {
         affectedArea !== 'general' 
           ? `Εστιάζει στην περιοχή: ${affectedArea} με επίπεδο πόνου ${painLevel}/10.` 
           : 'Εστιάζει σε γενική ενδυνάμωση και κινητικότητα.'
-      } Σχεδιασμένο με βάση την τρέχουσα κατάσταση και τους προσωπικούς στόχους του ασθενή.`;
+      } Σχεδιασμένο με βάση την τρέχουσα κατάσταση και τους προσωπικούς στόχους του ασθενή.';
       
       // Generate weekly goals
       const weeklyGoals = [
@@ -296,7 +300,7 @@ export const RehabProgramService = {
       end.setDate(start.getDate() + 6);
       
       // Create program record
-      const programInsert: TablesInsert<'programs'> = {
+      const programInsert: ProgramInsert = {
         patient_id: patientId.trim(),
         program_start_date: startDate.trim(),
         program_end_date: end.toISOString().split('T')[0],
@@ -324,7 +328,7 @@ export const RehabProgramService = {
       console.log('Program created successfully with ID:', programData.id);
       
       // Prepare and sanitize all exercises
-      const exercisesToInsert: TablesInsert<'program_exercises'>[] = [];
+      const exercisesToInsert: ProgramExerciseInsert[] = [];
       let totalExercises = 0;
       
       for (let dayIndex = 0; dayIndex < program.days.length; dayIndex++) {

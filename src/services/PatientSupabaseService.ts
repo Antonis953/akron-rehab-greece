@@ -1,10 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PatientFormData, Patient } from '@/types/patient';
-import { TablesInsert, Tables } from '@/lib/supabase/types';
-
-type PatientInsert = TablesInsert<'patients'>;
+import { PatientInsert, PatientUpdate } from '@/lib/supabase/generated-types';
 
 export const PatientSupabaseService = {
   /**
@@ -171,7 +168,7 @@ export const PatientSupabaseService = {
    * @param patientData The updated patient data
    * @returns The updated patient data or null if there was an error
    */
-  async updatePatient(patientId: string, patientData: Partial<Tables<'patients'>>): Promise<Patient | null> {
+  async updatePatient(patientId: string, patientData: PatientUpdate): Promise<Patient | null> {
     try {
       const { data, error } = await supabase
         .from('patients')
