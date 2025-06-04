@@ -12,102 +12,55 @@ export type Database = {
     Tables: {
       patients: {
         Row: {
-          created_at: string | null
-          email: string
-          full_name: string
           id: string
-          next_session_date: string | null
+          full_name: string
+          email: string
           phone: string | null
+          next_session_date: string | null
+          created_at: string | null
         }
         Insert: {
-          created_at?: string | null
-          email: string
-          full_name: string
           id?: string
-          next_session_date?: string | null
+          full_name: string
+          email: string
           phone?: string | null
+          next_session_date?: string | null
+          created_at?: string | null
         }
         Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string
           id?: string
-          next_session_date?: string | null
+          full_name?: string
+          email?: string
           phone?: string | null
+          next_session_date?: string | null
+          created_at?: string | null
         }
         Relationships: []
       }
-      program_exercises: {
-        Row: {
-          created_at: string | null
-          difficulty_level: number | null
-          exercise_name: string
-          id: string
-          pain_level: number | null
-          phase: string | null
-          program_id: string | null
-          reps: number | null
-          sets: number | null
-          video_link: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          difficulty_level?: number | null
-          exercise_name: string
-          id?: string
-          pain_level?: number | null
-          phase?: string | null
-          program_id?: string | null
-          reps?: number | null
-          sets?: number | null
-          video_link?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          difficulty_level?: number | null
-          exercise_name?: string
-          id?: string
-          pain_level?: number | null
-          phase?: string | null
-          program_id?: string | null
-          reps?: number | null
-          sets?: number | null
-          video_link?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "program_exercises_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "programs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       programs: {
         Row: {
-          created_at: string | null
           id: string
-          notes: string | null
           patient_id: string | null
-          program_end_date: string | null
           program_start_date: string
+          program_end_date: string | null
+          notes: string | null
+          created_at: string | null
         }
         Insert: {
-          created_at?: string | null
           id?: string
-          notes?: string | null
           patient_id?: string | null
-          program_end_date?: string | null
           program_start_date: string
+          program_end_date?: string | null
+          notes?: string | null
+          created_at?: string | null
         }
         Update: {
-          created_at?: string | null
           id?: string
-          notes?: string | null
           patient_id?: string | null
-          program_end_date?: string | null
           program_start_date?: string
+          program_end_date?: string | null
+          notes?: string | null
+          created_at?: string | null
         }
         Relationships: [
           {
@@ -116,7 +69,54 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "patients"
             referencedColumns: ["id"]
-          },
+          }
+        ]
+      }
+      program_exercises: {
+        Row: {
+          id: string
+          program_id: string | null
+          exercise_name: string
+          sets: number | null
+          reps: number | null
+          phase: string | null
+          difficulty_level: number | null
+          pain_level: number | null
+          video_link: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          program_id?: string | null
+          exercise_name: string
+          sets?: number | null
+          reps?: number | null
+          phase?: string | null
+          difficulty_level?: number | null
+          pain_level?: number | null
+          video_link?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          program_id?: string | null
+          exercise_name?: string
+          sets?: number | null
+          reps?: number | null
+          phase?: string | null
+          difficulty_level?: number | null
+          pain_level?: number | null
+          video_link?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_exercises_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          }
         ]
       }
     }

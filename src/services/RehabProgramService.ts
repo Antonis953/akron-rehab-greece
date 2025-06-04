@@ -55,18 +55,34 @@ export interface GeneratedProgram {
   }[];
 }
 
-// Comprehensive validation functions
+// Enhanced validation functions with better error handling
 const validateAndSanitizeNumber = (value: any, min: number, max: number, defaultValue: number): number => {
-  if (typeof value === 'number' && !isNaN(value) && value >= min && value <= max) {
-    return value;
+  // Handle null, undefined, or non-numeric values
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
   }
+  
+  // Convert to number if it's a string
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (typeof numValue === 'number' && !isNaN(numValue) && numValue >= min && numValue <= max) {
+    return Math.round(numValue); // Round to nearest integer
+  }
+  
+  console.warn(`Invalid number value: ${value}, using default: ${defaultValue}`);
   return defaultValue;
 };
 
 const validateAndSanitizeString = (value: any, defaultValue: string): string => {
+  if (value === null || value === undefined) {
+    return defaultValue;
+  }
+  
   if (typeof value === 'string' && value.trim().length > 0) {
     return value.trim();
   }
+  
+  console.warn(`Invalid string value: ${value}, using default: ${defaultValue}`);
   return defaultValue;
 };
 
@@ -75,6 +91,10 @@ const validatePhase = (phase: any): 'isometric' | 'concentric' | 'eccentric' | '
     'isometric', 'concentric', 'eccentric', 'plyometric'
   ];
   
+  if (phase === null || phase === undefined) {
+    return 'isometric'; // Default phase
+  }
+  
   if (typeof phase === 'string') {
     const normalizedPhase = phase.toLowerCase().trim() as 'isometric' | 'concentric' | 'eccentric' | 'plyometric';
     if (validPhases.includes(normalizedPhase)) {
@@ -82,64 +102,99 @@ const validatePhase = (phase: any): 'isometric' | 'concentric' | 'eccentric' | '
     }
   }
   
+  console.warn(`Invalid phase value: ${phase}, using default: isometric`);
   return 'isometric'; // Default phase
 };
 
-// Comprehensive exercise sanitization function
+// Enhanced exercise sanitization with strict validation
 const sanitizeExercise = (exercise: any, programId: string): TablesInsert<'program_exercises'> => {
-  console.log('Original exercise data:', exercise);
+  console.log('Sanitizing exercise:', exercise);
   
-  // Sanitize all fields with proper validation
+  // Ensure we have a valid program_id
+  if (!programId || typeof programId !== 'string') {
+    throw new Error('Invalid program ID provided');
+  }
+  
+  // Sanitize all fields with proper validation and defaults
   const sanitizedExercise: TablesInsert<'program_exercises'> = {
     program_id: programId,
-    exercise_name: validateAndSanitizeString(exercise.name || exercise.exercise_name, 'Γενική άσκηση'),
+    exercise_name: validateAndSanitizeString(
+      exercise.name || exercise.exercise_name, 
+      'Γενική άσκηση'
+    ),
     sets: validateAndSanitizeNumber(exercise.sets, 1, 10, 2),
     reps: validateAndSanitizeNumber(exercise.reps, 1, 50, 10),
     phase: validatePhase(exercise.phase),
-    difficulty_level: validateAndSanitizeNumber(exercise.difficulty || exercise.difficulty_level, 1, 10, 1),
-    pain_level: validateAndSanitizeNumber(exercise.painLevel || exercise.pain_level, 1, 10, 1),
-    video_link: validateAndSanitizeString(exercise.video_link || exercise.videoUrl, '')
+    difficulty_level: validateAndSanitizeNumber(
+      exercise.difficulty || exercise.difficulty_level, 
+      1, 10, 1
+    ),
+    pain_level: validateAndSanitizeNumber(
+      exercise.painLevel || exercise.pain_level, 
+      1, 10, 1
+    ),
+    video_link: validateAndSanitizeString(
+      exercise.video_link || exercise.videoUrl, 
+      ''
+    )
   };
   
-  console.log('Sanitized exercise data:', sanitizedExercise);
+  console.log('Sanitized exercise:', sanitizedExercise);
   return sanitizedExercise;
 };
 
-// Final validation before database insertion
+// Comprehensive validation before database insertion
 const validateExerciseForDatabase = (exercise: TablesInsert<'program_exercises'>): boolean => {
-  // Check all required fields are present and valid
+  const errors: string[] = [];
+  
+  // Validate program_id
   if (!exercise.program_id || typeof exercise.program_id !== 'string') {
-    console.error('Invalid program_id:', exercise.program_id);
-    return false;
+    errors.push('Invalid program_id');
   }
   
+  // Validate exercise_name (required)
   if (!exercise.exercise_name || typeof exercise.exercise_name !== 'string' || exercise.exercise_name.trim().length === 0) {
-    console.error('Invalid exercise_name:', exercise.exercise_name);
-    return false;
+    errors.push('Invalid exercise_name');
   }
   
+  // Validate phase (required)
   if (!exercise.phase || !['isometric', 'concentric', 'eccentric', 'plyometric'].includes(exercise.phase)) {
-    console.error('Invalid phase:', exercise.phase);
-    return false;
+    errors.push('Invalid phase');
   }
   
-  if (typeof exercise.sets !== 'number' || exercise.sets < 1 || exercise.sets > 10) {
-    console.error('Invalid sets:', exercise.sets);
-    return false;
+  // Validate sets (required, 1-10)
+  if (exercise.sets === null || exercise.sets === undefined || typeof exercise.sets !== 'number' || exercise.sets < 1 || exercise.sets > 10) {
+    errors.push('Invalid sets');
   }
   
-  if (typeof exercise.reps !== 'number' || exercise.reps < 1 || exercise.reps > 50) {
-    console.error('Invalid reps:', exercise.reps);
-    return false;
+  // Validate reps (required, 1-50)
+  if (exercise.reps === null || exercise.reps === undefined || typeof exercise.reps !== 'number' || exercise.reps < 1 || exercise.reps > 50) {
+    errors.push('Invalid reps');
   }
   
-  if (exercise.difficulty_level !== null && (typeof exercise.difficulty_level !== 'number' || exercise.difficulty_level < 1 || exercise.difficulty_level > 10)) {
-    console.error('Invalid difficulty_level:', exercise.difficulty_level);
-    return false;
+  // Validate difficulty_level (nullable, but if present must be 1-10)
+  if (exercise.difficulty_level !== null && exercise.difficulty_level !== undefined) {
+    if (typeof exercise.difficulty_level !== 'number' || exercise.difficulty_level < 1 || exercise.difficulty_level > 10) {
+      errors.push('Invalid difficulty_level');
+    }
   }
   
-  if (exercise.pain_level !== null && (typeof exercise.pain_level !== 'number' || exercise.pain_level < 1 || exercise.pain_level > 10)) {
-    console.error('Invalid pain_level:', exercise.pain_level);
+  // Validate pain_level (nullable, but if present must be 1-10)
+  if (exercise.pain_level !== null && exercise.pain_level !== undefined) {
+    if (typeof exercise.pain_level !== 'number' || exercise.pain_level < 1 || exercise.pain_level > 10) {
+      errors.push('Invalid pain_level');
+    }
+  }
+  
+  // Validate video_link (nullable, but if present must be string)
+  if (exercise.video_link !== null && exercise.video_link !== undefined) {
+    if (typeof exercise.video_link !== 'string') {
+      errors.push('Invalid video_link');
+    }
+  }
+  
+  if (errors.length > 0) {
+    console.error('Exercise validation errors:', errors, exercise);
     return false;
   }
   
@@ -260,38 +315,56 @@ export const RehabProgramService = {
    */
   saveProgram: async (patientId: string, startDate: string, notes: string, program: GeneratedProgram) => {
     try {
-      console.log('Starting program save process');
+      console.log('Starting enhanced program save process');
       console.log('Patient ID:', patientId);
       console.log('Start Date:', startDate);
-      console.log('Program:', program);
+      console.log('Program structure:', {
+        summary: program.summary?.length || 0,
+        weeklyGoals: program.weeklyGoals?.length || 0,
+        days: program.days?.length || 0
+      });
       
-      // Validate input parameters
-      if (!patientId || typeof patientId !== 'string') {
+      // Enhanced input validation
+      if (!patientId || typeof patientId !== 'string' || patientId.trim().length === 0) {
         throw new Error('Μη έγκυρο ID ασθενή');
       }
       
-      if (!startDate || typeof startDate !== 'string') {
+      if (!startDate || typeof startDate !== 'string' || startDate.trim().length === 0) {
         throw new Error('Μη έγκυρη ημερομηνία έναρξης');
       }
       
-      if (!program || !program.days || !Array.isArray(program.days)) {
+      // Validate date format
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(startDate)) {
+        throw new Error('Μη έγκυρη μορφή ημερομηνίας (πρέπει να είναι YYYY-MM-DD)');
+      }
+      
+      if (!program || typeof program !== 'object') {
         throw new Error('Μη έγκυρα δεδομένα προγράμματος');
+      }
+      
+      if (!program.days || !Array.isArray(program.days) || program.days.length === 0) {
+        throw new Error('Το πρόγραμμα πρέπει να περιέχει τουλάχιστον μία ημέρα');
       }
       
       // Calculate end date (start date + 6 days = 7 days total)
       const start = new Date(startDate);
+      if (isNaN(start.getTime())) {
+        throw new Error('Μη έγκυρη ημερομηνία έναρξης');
+      }
+      
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
       
-      // Create program record
+      // Create program record with enhanced validation
       const programInsert: TablesInsert<'programs'> = {
-        patient_id: patientId,
-        program_start_date: startDate,
+        patient_id: patientId.trim(),
+        program_start_date: startDate.trim(),
         program_end_date: end.toISOString().split('T')[0],
-        notes: notes || ''
+        notes: notes ? notes.trim() : null
       };
       
-      console.log('Inserting program:', programInsert);
+      console.log('Inserting program with data:', programInsert);
       
       // Insert program
       const { data: programData, error: programError } = await supabase
@@ -309,18 +382,29 @@ export const RehabProgramService = {
         throw new Error('Δεν ελήφθησαν δεδομένα προγράμματος από τη βάση');
       }
       
-      console.log('Program created with ID:', programData.id);
+      console.log('Program created successfully with ID:', programData.id);
       
-      // Prepare and validate all exercises
+      // Prepare and validate all exercises with enhanced error handling
       const exercisesToInsert: TablesInsert<'program_exercises'>[] = [];
+      let totalExercises = 0;
       
-      for (const day of program.days) {
-        if (!day.exercises || !Array.isArray(day.exercises)) {
-          console.warn('Skipping day with invalid exercises:', day);
+      for (let dayIndex = 0; dayIndex < program.days.length; dayIndex++) {
+        const day = program.days[dayIndex];
+        
+        if (!day || typeof day !== 'object') {
+          console.warn(`Skipping invalid day at index ${dayIndex}:`, day);
           continue;
         }
         
-        for (const exercise of day.exercises) {
+        if (!day.exercises || !Array.isArray(day.exercises)) {
+          console.warn(`Day ${dayIndex + 1} has no valid exercises:`, day);
+          continue;
+        }
+        
+        for (let exerciseIndex = 0; exerciseIndex < day.exercises.length; exerciseIndex++) {
+          const exercise = day.exercises[exerciseIndex];
+          totalExercises++;
+          
           try {
             // Sanitize and validate each exercise
             const sanitizedExercise = sanitizeExercise(exercise, programData.id);
@@ -328,24 +412,27 @@ export const RehabProgramService = {
             // Final validation before adding to insert array
             if (validateExerciseForDatabase(sanitizedExercise)) {
               exercisesToInsert.push(sanitizedExercise);
+              console.log(`✓ Exercise ${totalExercises} validated successfully`);
             } else {
-              console.error('Exercise failed validation:', sanitizedExercise);
-              throw new Error(`Μη έγκυρα δεδομένα άσκησης: ${sanitizedExercise.exercise_name}`);
+              const errorMsg = `Άσκηση ${totalExercises} (${sanitizedExercise.exercise_name}) δεν πέρασε την επικύρωση`;
+              console.error(errorMsg);
+              throw new Error(errorMsg);
             }
           } catch (exerciseError) {
-            console.error('Error processing exercise:', exercise, exerciseError);
-            throw new Error(`Σφάλμα επεξεργασίας άσκησης: ${exerciseError instanceof Error ? exerciseError.message : 'Άγνωστο σφάλμα'}`);
+            const errorMsg = `Σφάλμα επεξεργασίας άσκησης ${totalExercises}: ${exerciseError instanceof Error ? exerciseError.message : 'Άγνωστο σφάλμα'}`;
+            console.error(errorMsg, { day: dayIndex + 1, exercise: exerciseIndex + 1, data: exercise });
+            throw new Error(errorMsg);
           }
         }
       }
       
       if (exercisesToInsert.length === 0) {
-        throw new Error('Δεν υπάρχουν έγκυρες ασκήσεις για εισαγωγή');
+        throw new Error('Δεν υπάρχουν έγκυρες ασκήσεις για εισαγωγή στο πρόγραμμα');
       }
       
-      console.log(`Inserting ${exercisesToInsert.length} exercises:`, exercisesToInsert);
+      console.log(`Prepared ${exercisesToInsert.length} exercises for insertion out of ${totalExercises} total`);
       
-      // Insert all exercises
+      // Insert all exercises in a single operation
       const { error: exercisesError } = await supabase
         .from('program_exercises')
         .insert(exercisesToInsert);
@@ -355,27 +442,32 @@ export const RehabProgramService = {
         
         // Try to cleanup the created program if exercise insertion fails
         try {
-          await supabase
+          const { error: cleanupError } = await supabase
             .from('programs')
             .delete()
             .eq('id', programData.id);
-          console.log('Cleaned up program after exercise insertion failure');
+            
+          if (cleanupError) {
+            console.error('Failed to cleanup program after exercise insertion failure:', cleanupError);
+          } else {
+            console.log('Successfully cleaned up program after exercise insertion failure');
+          }
         } catch (cleanupError) {
-          console.error('Failed to cleanup program:', cleanupError);
+          console.error('Exception during program cleanup:', cleanupError);
         }
         
         throw new Error(`Αποτυχία αποθήκευσης ασκήσεων: ${exercisesError.message}`);
       }
       
-      console.log('All exercises inserted successfully');
+      console.log(`✅ Successfully inserted all ${exercisesToInsert.length} exercises`);
       
       // Show success message
-      toast.success("Το πρόγραμμα αποθηκεύτηκε με επιτυχία!");
+      toast.success(`Το πρόγραμμα αποθηκεύτηκε με επιτυχία! (${exercisesToInsert.length} ασκήσεις)`);
       
       return programData;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Άγνωστο σφάλμα';
-      console.error('Error saving program:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Άγνωστο σφάλμα αποθήκευσης';
+      console.error('Enhanced error in saveProgram:', error);
       toast.error(`Αποτυχία αποθήκευσης προγράμματος: ${errorMessage}`);
       throw error;
     }

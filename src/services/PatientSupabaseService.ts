@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PatientFormData, Patient } from '@/types/patient';
-import { TablesInsert } from '@/lib/supabase/types';
+import { TablesInsert, Tables } from '@/lib/supabase/types';
 
 type PatientInsert = TablesInsert<'patients'>;
 
@@ -40,8 +41,25 @@ export const PatientSupabaseService = {
         return null;
       }
       
+      if (!data) {
+        console.error('No data returned from patient creation');
+        toast.error('Προέκυψε ένα σφάλμα κατά τη δημιουργία του λογαριασμού.');
+        return null;
+      }
+      
       console.log('Patient created successfully:', data);
-      return data as Patient;
+      
+      // Safely map Supabase data to our Patient interface
+      const patient: Patient = {
+        id: data.id,
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone,
+        next_session_date: data.next_session_date,
+        created_at: data.created_at
+      };
+      
+      return patient;
     } catch (error) {
       console.error('Error creating patient:', error);
       toast.error('Προέκυψε ένα σφάλμα κατά τη δημιουργία του λογαριασμού.');
@@ -60,14 +78,29 @@ export const PatientSupabaseService = {
         .from('patients')
         .select('*')
         .eq('id', patientId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching patient:', error);
         return null;
       }
       
-      return data as Patient;
+      if (!data) {
+        console.log(`Patient with ID ${patientId} not found`);
+        return null;
+      }
+      
+      // Safely map Supabase data to our Patient interface
+      const patient: Patient = {
+        id: data.id,
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone,
+        next_session_date: data.next_session_date,
+        created_at: data.created_at
+      };
+      
+      return patient;
     } catch (error) {
       console.error('Error fetching patient:', error);
       return null;
@@ -78,7 +111,7 @@ export const PatientSupabaseService = {
    * Get all patients from the Supabase database
    * @returns An array of patients or empty array if there was an error
    */
-  async getAllPatients(): Promise<Patient[]> {
+  async getAllPatients(): Promise<Patient[]> => {
     try {
       const { data, error } = await supabase
         .from('patients')
@@ -90,7 +123,19 @@ export const PatientSupabaseService = {
         return [];
       }
       
-      return data as Patient[];
+      if (!data || data.length === 0) {
+        return [];
+      }
+      
+      // Safely map Supabase data to our Patient interface
+      return data.map((patient): Patient => ({
+        id: patient.id,
+        full_name: patient.full_name,
+        email: patient.email,
+        phone: patient.phone,
+        next_session_date: patient.next_session_date,
+        created_at: patient.created_at
+      }));
     } catch (error) {
       console.error('Error fetching patients:', error);
       return [];
@@ -126,7 +171,7 @@ export const PatientSupabaseService = {
    * @param patientData The updated patient data
    * @returns The updated patient data or null if there was an error
    */
-  async updatePatient(patientId: string, patientData: Partial<Patient>): Promise<Patient | null> {
+  async updatePatient(patientId: string, patientData: Partial<Tables<'patients'>>): Promise<Patient | null> {
     try {
       const { data, error } = await supabase
         .from('patients')
@@ -141,8 +186,25 @@ export const PatientSupabaseService = {
         return null;
       }
       
+      if (!data) {
+        console.error('No data returned from patient update');
+        toast.error('Προέκυψε ένα σφάλμα κατά την ενημέρωση των στοιχείων.');
+        return null;
+      }
+      
       toast.success('Τα στοιχεία του ασθενή ενημερώθηκαν με επιτυχία');
-      return data as Patient;
+      
+      // Safely map Supabase data to our Patient interface
+      const patient: Patient = {
+        id: data.id,
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone,
+        next_session_date: data.next_session_date,
+        created_at: data.created_at
+      };
+      
+      return patient;
     } catch (error) {
       console.error('Error updating patient:', error);
       toast.error('Προέκυψε ένα σφάλμα κατά την ενημέρωση των στοιχείων.');
