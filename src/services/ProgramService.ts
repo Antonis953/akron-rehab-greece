@@ -2,6 +2,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Program } from '@/lib/supabase/generated-types';
 
+// Re-export the Program type so it can be imported by other files
+export type { Program };
+
 export const ProgramService = {
   /**
    * Check if a program exists for a given patient
